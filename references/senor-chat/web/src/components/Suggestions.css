@@ -1,0 +1,136 @@
+.suggestions-container {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  margin-top: 4px;
+}
+
+.suggestions {
+  position: relative;
+  width: 100%;
+  height: auto;
+  max-height: 130px;
+  background: rgba(5, 7, 12, 0.9);
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  display: flex;
+  gap: 6px;
+  flex-direction: column;
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.suggestions-empty {
+  width: 100%;
+  background: rgba(5, 7, 12, 0.9);
+  padding: 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.suggestion {
+  width: 100%;
+  height: auto;
+  min-height: auto;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  flex: none;
+  flex-shrink: 0;
+  text-align: left;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion__line {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.suggestion__command {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.suggestion__command.disabled {
+  color: rgba(255, 255, 255, 0.4);
+  opacity: 0.6;
+}
+
+.suggestion__param {
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Courier New', monospace;
+  padding: 2px 4px;
+  border-radius: 2px;
+  transition: all 0.2s ease;
+}
+
+.suggestion__param.disabled {
+  color: rgba(255, 255, 255, 0.3);
+  opacity: 0.5;
+}
+
+.suggestion__param--active {
+  background-color: color-mix(in srgb, var(--main-color, #0D77D9) 30%, transparent);
+  color: var(--main-color, #0D77D9);
+  font-weight: 600;
+}
+
+.suggestion__help {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.suggestion:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.suggestion.active {
+  background: color-mix(in srgb, var(--main-color, #0D77D9) 20%, transparent);
+  font-weight: 500;
+}
+
+/* Scrollbar styling */
+.suggestions::-webkit-scrollbar {
+  width: 4px;
+}
+
+.suggestions::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.suggestions::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+  border-radius: 4px;
+}
+
+.suggestions::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--main-color, #0D77D9) 70%, transparent);
+}
+
+
+

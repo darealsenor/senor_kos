@@ -1,0 +1,15 @@
+Events = {
+    ADD_ZONE = 'redzone:client:addZone',
+    UPDATE_ZONE = 'redzone:client:updateZone',
+    REMOVE_ZONE = 'redzone:client:removeZone',
+    SET_ZONES = 'redzone:client:setZones',
+    REQUEST_ZONES = 'redzone:server:requestZones',
+    PLAYER_ENTERED = 'redzone:server:playerEntered',
+    PLAYER_EXITED = 'redzone:server:playerExited',
+    PLAYER_DIED = 'redzone:server:playerDied',
+    PLAYER_REVIVED = 'redzone:server:playerRevived',
+    PLAYER_DROPPED = 'redzone:server:playerDropped',
+    LEADERBOARD_UPDATE = 'redzone:client:leaderboardUpdate',
+    ZONE_END_RESULTS = 'redzone:client:zoneEndResults',
+    RESPAWN_AT = 'redzone:client:respawnAt',
+}

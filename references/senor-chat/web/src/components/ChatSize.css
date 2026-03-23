@@ -1,0 +1,119 @@
+/* Chat Size System - CSS-based sizing for chat elements */
+
+.chat-position-wrapper {
+  transition: all 0.3s ease;
+}
+
+.chat-size-small .chat {
+  width: 295px;
+  height: 180px;
+  max-height: 180px;
+  min-height: 180px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-small .chat__message {
+  width: 295px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-small .chat__message--content {
+  width: 237px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-small .InputContainer {
+  width: 295px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-medium .chat {
+  width: 400px;
+  height: 243px;
+  max-height: 243px;
+  min-height: 243px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-medium .chat__message {
+  width: 400px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-medium .chat__message--content {
+  width: 340px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-medium .InputContainer {
+  width: 400px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-large .chat {
+  width: 500px;
+  height: 300px;
+  max-height: 300px;
+  min-height: 300px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-large .chat__message {
+  width: 500px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-large .chat__message--content {
+  width: 440px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-large .InputContainer {
+  width: 500px;
+  transition: all 0.3s ease;
+}
+
+/* Adjust message content width when profile pictures are hidden */
+.chat-size-small .chat__message--no-avatar .chat__message--content {
+  width: 295px !important;
+}
+
+.chat-size-medium .chat__message--no-avatar .chat__message--content {
+  width: 400px !important;
+}
+
+.chat-size-large .chat__message--no-avatar .chat__message--content {
+  width: 500px !important;
+}
+
+/* Suggestions sizing to match input container */
+.chat-size-small .suggestions-container {
+  width: 295px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-small .suggestions {
+  width: 295px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-medium .suggestions-container {
+  width: 400px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-medium .suggestions {
+  width: 400px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-large .suggestions-container {
+  width: 500px;
+  transition: all 0.3s ease;
+}
+
+.chat-size-large .suggestions {
+  width: 500px;
+  transition: all 0.3s ease;
+}
+

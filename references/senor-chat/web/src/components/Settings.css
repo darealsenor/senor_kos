@@ -1,0 +1,510 @@
+/* reset */
+button,
+fieldset,
+input {
+	all: unset;
+}
+
+/* New Right-Side Panel Design */
+.SettingsOverlay {
+	background-color: rgba(0, 0, 0, 0.5);
+	position: fixed;
+	inset: 0;
+	animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+	z-index: 999;
+}
+
+.SettingsPanel {
+	position: fixed;
+	top: 0;
+	right: -400px;
+	width: 400px;
+	height: 100vh;
+	max-height: 100vh;
+	background-color: var(--gray-1);
+	box-shadow: var(--shadow-6);
+	transition: right 300ms cubic-bezier(0.16, 1, 0.3, 1);
+	z-index: 1000;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	touch-action: pan-y;
+}
+
+.SettingsPanel--open {
+	right: 0;
+}
+
+.SettingsPanel__header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20px 25px;
+	border-bottom: 1px solid var(--main-color, #0D77D9);
+	background-color: var(--gray-2);
+}
+
+.SettingsPanel__title {
+	margin: 0;
+	font-weight: 600;
+	color: var(--mauve-12);
+	font-size: 18px;
+}
+
+.SettingsPanel__close {
+	all: unset;
+	width: 30px;
+	height: 30px;
+	border-radius: 50%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--gray-3);
+	color: var(--mauve-11);
+	font-size: 18px;
+	font-weight: bold;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.SettingsPanel__close:hover {
+	background-color: var(--pink-4);
+	color: var(--pink-11);
+}
+
+.SettingsPanel__content {
+	flex: 1;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 25px;
+	min-height: 0;
+	max-height: calc(100vh - 80px);
+	height: calc(100vh - 80px);
+	-webkit-overflow-scrolling: touch;
+	overscroll-behavior: contain;
+	position: relative;
+	z-index: 1;
+}
+
+.SettingsPanel__content::-webkit-scrollbar {
+	width: 8px;
+}
+
+.SettingsPanel__content::-webkit-scrollbar-track {
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 4px;
+}
+
+.SettingsPanel__content::-webkit-scrollbar-thumb {
+	background: color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+	border-radius: 4px;
+}
+
+.SettingsPanel__content::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in srgb, var(--main-color, #0D77D9) 70%, transparent);
+}
+
+.SettingsPanel__section {
+	margin-bottom: 30px;
+}
+
+.SettingsPanel__section-title {
+	margin: 0 0 20px 0;
+	font-weight: 600;
+	color: var(--mauve-12);
+	font-size: 16px;
+	border-bottom: 1px solid var(--main-color, #0D77D9);
+	padding-bottom: 8px;
+}
+
+.SettingsPanel__setting {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 15px;
+	padding: 10px 0;
+}
+
+.SettingsPanel_setting-column {
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+.SettingsPanel__label {
+	font-size: 14px;
+	color: var(--mauve-11);
+	flex: 1;
+	margin-right: 15px;
+	line-height: 1.4;
+}
+
+.SettingsPanel__actions {
+	display: flex;
+	gap: 10px;
+	margin-top: 30px;
+	padding-top: 20px;
+	border-top: 1px solid var(--main-color, #0D77D9);
+}
+
+.SettingsPanel__appearance {
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.SettingsPanel__appearance-item {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.SettingsPanel__placeholder {
+	color: rgba(255, 255, 255, 0.5);
+	font-style: italic;
+	padding: 8px;
+	background: rgba(255, 255, 255, 0.05);
+	border-radius: 4px;
+	text-align: center;
+}
+
+
+.Button--primary {
+	background-color: var(--green-4);
+	color: var(--green-11);
+	flex: 1;
+}
+
+.Button--primary:hover {
+	background-color: var(--green-5);
+}
+
+.Button--secondary {
+	background-color: var(--red-4);
+	color: var(--red-11);
+	flex: 1;
+}
+
+.Button--secondary:hover {
+	background-color: var(--red-5);
+}
+
+/* Legacy Modal Styles (keeping for compatibility) */
+.DialogOverlay {
+	background-color: var(--black-a9);
+	position: fixed;
+	inset: 0;
+	animation: overlayShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.DialogContent {
+	background-color: var(--gray-1);
+	border-radius: 6px;
+	box-shadow: var(--shadow-6);
+	position: fixed;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	width: 90vw;
+	max-width: 500px;
+	max-height: 85vh;
+	padding: 25px;
+	animation: contentShow 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.DialogContent:focus {
+	outline: none;
+}
+
+.DialogTitle {
+	margin: 0;
+	font-weight: 500;
+	color: var(--mauve-12);
+	font-size: 17px;
+}
+
+.DialogDescription {
+	margin: 10px 0 20px;
+	color: var(--mauve-11);
+	font-size: 15px;
+	line-height: 1.5;
+}
+
+.Button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	padding: 0 15px;
+	font-size: 15px;
+	line-height: 1;
+	font-weight: 500;
+	height: 35px;
+	user-select: none;
+}
+.Button:focus:not(:focus-visible) {
+	outline: 0;
+}
+.Button:focus-visible {
+	outline: 2px solid var(--main-color, #0D77D9);
+	outline-offset: 1px;
+}
+.Button.pink {
+	background-color: var(--pink-4);
+	color: var(--pink-12);
+	outline-color: var(--pink-6);
+}
+.Button.pink:hover {
+	background-color: var(--mauve-3);
+}
+.Button.green {
+	background-color: var(--green-4);
+	color: var(--green-11);
+	outline-color: var(--green-7);
+}
+.Button.green:hover {
+	background-color: var(--green-5);
+}
+
+.Button.red {
+	background-color: var(--red-4);
+	color: var(--red-11);
+	outline-color: var(--red-7);
+}
+.Button.red:hover {
+	background-color: var(--red-5);
+}
+
+.IconButton {
+	all: unset;
+	font-family: inherit;
+	border-radius: 100%;
+	height: 25px;
+	width: 25px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--pink-11);
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	background-color: var(--gray-3);
+}
+.IconButton:hover {
+	background-color: var(--pink-4);
+}
+.IconButton:focus {
+	box-shadow: 0 0 0 2px var(--pink-7);
+}
+
+.Fieldset {
+	display: flex;
+	gap: 20px;
+	align-items: center;
+	margin-bottom: 15px;
+}
+
+.Label {
+	font-size: 15px;
+	color: var(--pink-11);
+	width: 90px;
+	text-align: right;
+}
+
+.Input {
+	width: 100%;
+	flex: 1;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	padding: 0 10px;
+	font-size: 15px;
+	line-height: 1;
+	color: var(--pink-11);
+	box-shadow: 0 0 0 1px var(--pink-7);
+	height: 35px;
+}
+.Input:focus {
+	box-shadow: 0 0 0 2px var(--main-color, #0D77D9);
+}
+
+@keyframes overlayShow {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes contentShow {
+	from {
+		opacity: 0;
+		transform: translate(-50%, -48%) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translate(-50%, -50%) scale(1);
+	}
+}
+
+.SwitchRoot {
+	width: 42px;
+	height: 25px;
+	background-color: var(--black-a9);
+	border-radius: 9999px;
+	position: relative;
+	box-shadow: 0 2px 10px var(--black-a7);
+	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+	&:focus {
+		box-shadow: 0 0 0 2px var(--main-color, #0D77D9);
+	}
+	&[data-state="checked"] {
+		background-color: var(--main-color, #0D77D9);
+	}
+}
+
+.SwitchThumb {
+	display: block;
+	width: 21px;
+	height: 21px;
+	background-color: white;
+	border-radius: 9999px;
+	box-shadow: 0 2px 2px var(--black-a7);
+	transition: transform 100ms;
+	transform: translateX(2px);
+	will-change: transform;
+	&[data-state="checked"] {
+		transform: translateX(19px);
+	}
+}
+
+.SeparatorRoot {
+	background-color: var(--pink-6);
+}
+
+.SeparatorRoot[data-orientation="vertical"] {
+	height: 100%;
+	width: 1px;
+}
+
+.SettingsPanel__position-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+
+.SettingsPanel__position-empty {
+	aspect-ratio: 1;
+	border: 1px dashed rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+	background: transparent;
+	pointer-events: none;
+}
+
+.SettingsPanel__position-button {
+	padding: 10px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+	color: rgba(255, 255, 255, 0.8);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 12px;
+}
+
+.SettingsPanel__position-button:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+}
+
+.SettingsPanel__position-button--active {
+	background: color-mix(in srgb, var(--main-color, #0D77D9) 20%, transparent);
+	border-color: color-mix(in srgb, var(--main-color, #0D77D9) 80%, transparent);
+	color: var(--main-color, #0D77D9);
+}
+
+.SettingsPanel__size-options {
+	display: flex;
+	gap: 8px;
+}
+
+.SettingsPanel__size-button {
+	padding: 10px 20px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+	color: rgba(255, 255, 255, 0.8);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	flex: 1;
+}
+
+.SettingsPanel__size-button:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+}
+
+.SettingsPanel__size-button--active {
+	background: color-mix(in srgb, var(--main-color, #0D77D9) 20%, transparent);
+	border-color: color-mix(in srgb, var(--main-color, #0D77D9) 80%, transparent);
+	color: var(--main-color, #0D77D9);
+}
+
+.SettingsPanel__preset-options {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.SettingsPanel__preset-button {
+	padding: 8px 16px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 4px;
+	color: rgba(255, 255, 255, 0.8);
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.SettingsPanel__preset-button:hover {
+	background: rgba(255, 255, 255, 0.1);
+	border-color: color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+}
+
+.SettingsPanel__preset-button:active {
+	transform: translateY(1px);
+}
+
+.SettingsPanel__color-palette {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+}
+
+.SettingsPanel__color-button {
+	width: 100%;
+	aspect-ratio: 1;
+	min-width: 50px;
+	min-height: 50px;
+	border: 2px solid rgba(255, 255, 255, 0.2);
+	border-radius: 4px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.SettingsPanel__color-button:hover {
+	transform: scale(1.1);
+	border-color: rgba(255, 255, 255, 0.5);
+}
+
+.SettingsPanel__color-button--active {
+	border-color: var(--main-color, #0D77D9);
+	border-width: 3px;
+	box-shadow: 0 0 10px color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+	outline: 2px solid var(--main-color, #0D77D9);
+	outline-offset: 2px;
+}
+

@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+
+  overflow: hidden !important;
+  user-select: none;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+#root {
+  height: 100%
+}
+
+input:focus,
+input:active {
+  border: none;
+  outline: none;
+  background: transparent;
+}

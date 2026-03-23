@@ -1,0 +1,8 @@
+.nui-wrapper {
+  text-align: center;
+  height: 100%;
+  display: flex;
+  /* justify-content: center; */
+  padding: 2.5vh 8vh;
+  /* align-items: center; */
+}

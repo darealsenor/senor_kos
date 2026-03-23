@@ -1,0 +1,38 @@
+html {
+  scroll-behavior: smooth;
+}
+
+.nui-wrapper {
+  /* text-align: center; */
+  height: 100%;
+  display: flex;
+  /* padding: 3vh; */
+  flex-direction: column;
+  gap: 1vh;
+}
+
+pre {
+  counter-reset:line-numbering;
+  background:#2c3e50;
+  padding:12px 0px 14px 0;
+  line-height:140%;
+}
+
+.popup-thing {
+  background: #282c34;
+  border-radius: 10px;
+  width: 500px;
+  height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: white;
+}
+
+.reference {
+  height: 393px;
+  width: 535px;
+
+  position: absolute;
+
+}

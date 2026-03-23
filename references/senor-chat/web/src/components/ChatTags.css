@@ -1,0 +1,201 @@
+.chat-tags-multiselect {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.chat-tags-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.chat-tags-checkbox:hover:not(.chat-tags-checkbox--disabled) {
+  background-color: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.chat-tags-checkbox--selected {
+  background-color: color-mix(in srgb, var(--main-color, #0D77D9) 15%, transparent);
+  border-color: color-mix(in srgb, var(--main-color, #0D77D9) 30%, transparent);
+  outline: 2px solid var(--main-color, #0D77D9);
+  outline-offset: 2px;
+}
+
+.chat-tags-checkbox--selected:hover {
+  background-color: color-mix(in srgb, var(--main-color, #0D77D9) 20%, transparent);
+  border-color: color-mix(in srgb, var(--main-color, #0D77D9) 40%, transparent);
+}
+
+.chat-tags-checkbox--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.chat-tags-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--main-color, #0D77D9);
+}
+
+.chat-tags-checkbox--disabled input[type="checkbox"] {
+  cursor: not-allowed;
+}
+
+.chat-tags-checkbox span {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.chat-colors-dropdown {
+  position: relative;
+  width: 100%;
+}
+
+.chat-colors-select {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 0 15px;
+  font-size: 13px;
+  line-height: 1;
+  height: 35px;
+  gap: 5px;
+  background-color: var(--gray-3);
+  color: var(--mauve-12);
+  border: 1px solid var(--gray-6);
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.chat-colors-select:hover {
+  background-color: var(--gray-4);
+  border-color: var(--gray-7);
+}
+
+.chat-colors-select:focus {
+	outline: none;
+	border-color: var(--main-color, #0D77D9);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color, #0D77D9) 30%, transparent);
+}
+
+.chat-colors-select option {
+  background-color: var(--gray-2);
+  color: var(--mauve-12);
+  padding: 8px 12px;
+}
+
+.chat-colors-select option:hover {
+  background-color: var(--gray-4);
+}
+
+/* Keep the old Radix styles for backward compatibility */
+.SelectTrigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 4px;
+	padding: 0 15px;
+	font-size: 13px;
+	line-height: 1;
+	height: 35px;
+	gap: 5px;
+	background-color: white;
+	color: var(--pink-11);
+	box-shadow: 0 2px 10px var(--black-a7);
+}
+.SelectTrigger:hover {
+	background-color: var(--mauve-3);
+}
+.SelectTrigger:focus {
+	box-shadow: 0 0 0 2px black;
+}
+.SelectTrigger[data-placeholder] {
+	color: var(--pink-9);
+}
+
+
+.SelectIcon {
+	color: Var(--pink-11);
+}
+
+.SelectContent {
+	overflow: hidden;
+	background-color: white;
+	border-radius: 6px;
+	box-shadow:
+		0px 10px 38px -10px rgba(22, 23, 24, 0.35),
+		0px 10px 20px -15px rgba(22, 23, 24, 0.2);
+}
+
+.SelectViewport {
+	padding: 5px;
+}
+
+.SelectItem {
+	font-size: 13px;
+	line-height: 1;
+	color: var(--pink-11);
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	height: 25px;
+	padding: 0 35px 0 25px;
+	position: relative;
+	user-select: none;
+}
+.SelectItem[data-disabled] {
+	color: var(--mauve-8);
+	pointer-events: none;
+}
+.SelectItem[data-highlighted] {
+	outline: none;
+	background-color: var(--pink-9);
+	color: var(--pink-1);
+}
+
+.SelectLabel {
+	padding: 0 25px;
+	font-size: 12px;
+	line-height: 25px;
+	color: var(--mauve-11);
+}
+
+.SelectSeparator {
+	height: 1px;
+	background-color: var(--pink-6);
+	margin: 5px;
+}
+
+.SelectItemIndicator {
+	position: absolute;
+	left: 0;
+	width: 25px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.SelectScrollButton {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 25px;
+	background-color: white;
+	color: var(--pink-11);
+	cursor: default;
+}

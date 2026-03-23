@@ -1,0 +1,3 @@
+State = {
+    podiums = { props = {}, peds = {} },
+}

@@ -1,0 +1,14 @@
+.idea
+*.log
+node_modules/
+.DS_Store
+Thumbs.db
+web/node_modules/
+web/dist/
+web/.vite/
+*.swp
+*.swo
+*~
+.env
+.env.local
+.env.*.local

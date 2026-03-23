@@ -1,0 +1,86 @@
+/* Chat Position System - CSS-based positioning for chat elements */
+
+.chat-position-wrapper {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* Left positions */
+.chat-position-left-top {
+  left: 2vw;
+  top: 2vh;
+  right: auto;
+  bottom: auto;
+  transform: none;
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+.chat-position-left-center {
+  left: 2vw;
+  top: 50%;
+  right: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+.chat-position-left-bottom {
+  left: 2vw;
+  bottom: 2vh;
+  right: auto;
+  top: auto;
+  transform: none;
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+/* Center positions */
+.chat-position-center-top {
+  left: 50%;
+  top: 2vh;
+  right: auto;
+  bottom: auto;
+  transform: translateX(-50%);
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+.chat-position-center-bottom {
+  left: 50%;
+  bottom: 2vh;
+  right: auto;
+  top: auto;
+  transform: translateX(-50%);
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+/* Right positions */
+.chat-position-right-top {
+  right: 2vw;
+  top: 2vh;
+  left: auto;
+  bottom: auto;
+  transform: none;
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+.chat-position-right-center {
+  right: 2vw;
+  top: 50%;
+  left: auto;
+  bottom: auto;
+  transform: translateY(-50%);
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+
+.chat-position-right-bottom {
+  right: 2vw;
+  bottom: 2vh;
+  left: auto;
+  top: auto;
+  transform: none;
+  transition: left 0.3s ease, top 0.3s ease, right 0.3s ease, bottom 0.3s ease, transform 0.3s ease;
+}
+

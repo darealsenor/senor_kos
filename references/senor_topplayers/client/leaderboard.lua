@@ -1,0 +1,15 @@
+RegisterNetEvent('senor_topplayers:leaderboard:open', function()
+    SendTopplayersConfig()
+    toggleNuiFrame(true)
+    SendNUIMessage({ action = 'setLeaderboardOpen', data = true })
+end)
+
+RegisterNUICallback('senor_topplayers:getLeaderboard', function(data, cb)
+    local result = lib.callback.await('senor_topplayers:server:GetLeaderboard', false, data)
+    cb(result or { entries = {}, total = 0 })
+end)
+
+RegisterNUICallback('senor_topplayers:getLeaderboardSelf', function(data, cb)
+    local result = lib.callback.await('senor_topplayers:server:GetLeaderboardSelf', false, data or {})
+    cb(result or {})
+end)

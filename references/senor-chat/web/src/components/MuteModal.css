@@ -1,0 +1,148 @@
+.MuteModalOverlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.MuteModalContent {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(5, 7, 12, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 24px;
+  min-width: 400px;
+  max-width: 500px;
+  z-index: 10000;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  animation: slideIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -48%);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%);
+  }
+}
+
+.MuteModalTitle {
+  font-size: 20px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 20px 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.MuteModalForm {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.MuteModalField {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.MuteModalLabel {
+  font-size: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.MuteModalInput,
+.MuteModalSelect {
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: #fff;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.MuteModalInput:focus,
+.MuteModalSelect:focus {
+  outline: none;
+  border-color: var(--main-color, #0D77D9);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.MuteModalInput::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.MuteModalSelect {
+  cursor: pointer;
+}
+
+.MuteModalSelect option {
+  background: rgba(5, 7, 12, 0.95);
+  color: #fff;
+}
+
+.MuteModalActions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.MuteModalButton {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.MuteModalButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.MuteModalButtonCancel {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.MuteModalButtonCancel:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.MuteModalButtonSubmit {
+  background: var(--main-color, #0D77D9);
+  color: #fff;
+}
+
+.MuteModalButtonSubmit:hover:not(:disabled) {
+  background: var(--main-color, #0D77D9);
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+

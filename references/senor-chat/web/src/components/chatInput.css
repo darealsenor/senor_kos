@@ -1,0 +1,366 @@
+.InputContainer {
+  box-sizing: border-box;
+  position: relative;
+  width: 400px;
+  height: 40px;
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  background: rgba(5, 7, 12, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: white;
+  transition: opacity 0.3s ease;
+}
+
+.InputContainer__wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.InputContainer__fadeIn {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.InputContainer__fadeOut {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+
+.InputContainer:focus-within {
+  border: 1px solid var(--main-color, #0D77D9);
+  outline: none;
+}
+
+.InputContainer__channels-inline-wrapper {
+  position: relative;
+  margin-left: 26px;
+  margin-right: 8px;
+  padding-left: 6px;
+  padding-right: 4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  height: 24px;
+  display: flex;
+  align-items: center;
+}
+
+.InputContainer__channels-inline {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  margin-left: 26px;
+  margin-right: 8px;
+  padding-left: 6px;
+  padding-right: 4px;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+  height: 24px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.InputContainer__channels-inline::-webkit-scrollbar {
+  display: none;
+}
+
+.InputContainer__channel-inline {
+  padding: 2px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+  font-size: 11px;
+  line-height: 14px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  background: transparent;
+}
+
+.InputContainer__channel-inline:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.InputContainer__channel-inline--selected {
+  background: color-mix(in srgb, var(--main-color, #0D77D9) 30%, transparent);
+  color: var(--main-color, #0D77D9);
+  font-weight: 600;
+}
+
+.InputContainer__channels-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  background: rgba(5, 7, 12, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  min-width: 150px;
+  max-width: 250px;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.InputContainer__channel-dropdown-item {
+  padding: 6px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+  white-space: nowrap;
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+}
+
+.InputContainer__channel-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.InputContainer__channel-dropdown-item--selected {
+  background: color-mix(in srgb, var(--main-color, #0D77D9) 30%, transparent);
+  color: var(--main-color, #0D77D9);
+  font-weight: 600;
+}
+
+.InputContainer__input{
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin-left: 44px;
+  margin-right: 66px;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: 500;
+  text-align: left;
+}
+
+
+.InputContainer__input::placeholder {
+  font-size: small;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.InputContainer__input:focus{
+  border: none;
+  outline: none;
+}
+
+.InputContainer__input--buttons__emojis {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  right: 42px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.InputContainer__input--buttons__settings {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.InputContainer__input--buttons__settings .InputContainer__input--buttons__svg {
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
+.InputContainer__input--buttons__svg {
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.InputContainer__input--buttons__emojis .InputContainer__input--buttons__svg {
+  width: 16px;
+  height: 16px;
+  filter: brightness(0) saturate(100%) invert(1);
+}
+
+.emojiPicker {
+  /* Position is now controlled by inline styles based on chat location */
+}
+
+.InputContainer__input--buttons__send {
+  position: absolute;
+  width: 25px;
+  height: 25px;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.InputContainer__input--buttons__send:hover {
+  opacity: 0.8;
+}
+
+.InputContainer__input--buttons__send img {
+  width: 16px;
+  height: 16px;
+  background-color: transparent;
+  object-fit: contain;
+}
+
+.chat__input {
+  display: flex;
+  align-items: center;
+  gap: 0.5vh;
+  padding: 0.5vh;
+  background: rgba(5, 7, 12, 0.9);
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.chat__input:hover {
+  border-color: color-mix(in srgb, var(--main-color, #0D77D9) 30%, transparent);
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--main-color, #0D77D9) 10%, transparent);
+}
+
+.chat__input:focus-within {
+  border-color: color-mix(in srgb, var(--main-color, #0D77D9) 50%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--main-color, #0D77D9) 20%, transparent);
+}
+
+.chat__input--button {
+  background: none;
+  border: none;
+  color: var(--main-color, #0D77D9);
+  cursor: pointer;
+  padding: 0.3vh;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chat__input--button:hover {
+  background: color-mix(in srgb, var(--main-color, #0D77D9) 10%, transparent);
+  transform: scale(1.1);
+}
+
+.chat__input--button:active {
+  transform: scale(0.95);
+}
+
+
+/* .Input-container:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid #5b5d7b;
+  outline: none;
+}
+
+.Input-container__input--input {
+  transition: background 200ms linear, border 200ms linear;
+  width: 100%;
+  height: auto;
+  max-height: 100%;
+  color: white;
+  background: transparent;
+  padding: 0.3vw 1.2vw;
+  border: none;
+}
+
+
+textarea{
+  resize: none;
+  margin: 0;
+}
+
+.Input-container__input--input:focus {
+  border: none;
+  outline: none;
+}
+
+
+
+.Input-container__input--input::placeholder {
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 1;
+}
+
+
+.Input-container__input--buttons {
+  position: absolute;
+
+  display: flex;
+  gap: 1vh;
+
+  top: 50%;
+  right: -7%;
+  display: flex;
+  cursor: pointer;
+}
+
+.Input-container__input--buttons__svg {
+  width: 16px;
+  fill: white;
+}
+
+.Input-container__input--buttons__svg--inverse {
+  filter: invert(100%);
+}
+
+.Input-container__input--length {
+  position: absolute;
+  top: 40%;
+  right: -27%;
+  color: white;
+  font-size: 2vh;
+} */
+
+/* .input
+  width: 100%
+  font: inherit
+  color: rgba(255, 255, 255, .8)
+  outline: none
+  padding: 10px 25px
+  background: rgba(255, 255, 255, .20)
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37)
+  backdrop-filter: blur(10px)
+  border-radius: 10px
+  border: 1px solid rgba(255, 255, 255, 0.18)
+  transition: background 200ms
+  &:focus
+    background: rgba(255, 255, 255, .25)
+  &::placeholder
+    color: rgba(255, 255, 255, .5) */

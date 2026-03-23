@@ -1,0 +1,3 @@
+-- lib.onCache('pausemenu', function(visible)
+--     SendReactMessage('setHudVisible', not visible)
+-- end)

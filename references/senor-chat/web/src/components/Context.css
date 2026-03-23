@@ -1,0 +1,97 @@
+/* .ContextMenuTrigger {
+	display: block;
+	border: 2px white dashed;
+	color: white;
+	border-radius: 4px;
+	font-size: 15px;
+	user-select: none;
+	padding: 45px 0;
+	width: 300px;
+	text-align: center;
+} */
+
+.ContextMenuContent,
+.ContextMenuSubContent {
+	min-width: 220px;
+	background-color: rgba(5, 7, 12, 0.95);
+	border: 1px solid rgba(255, 255, 255, 0.15);
+	border-radius: 6px;
+	overflow: hidden;
+	padding: 5px;
+	box-shadow:
+		0px 10px 38px -10px rgba(0, 0, 0, 0.5),
+		0px 10px 20px -15px rgba(0, 0, 0, 0.3);
+	z-index: 10000;
+}
+
+.ContextMenuItem,
+.ContextMenuCheckboxItem,
+.ContextMenuRadioItem,
+.ContextMenuSubTrigger {
+	font-size: 13px;
+	line-height: 1;
+	color: rgba(255, 255, 255, 0.9);
+	border-radius: 3px;
+	display: flex;
+	align-items: center;
+	height: 25px;
+	padding: 0 5px;
+	position: relative;
+	padding-left: 25px;
+	user-select: none;
+	outline: none;
+	cursor: pointer;
+}
+.ContextMenuSubTrigger[data-state="open"] {
+	background-color: rgba(255, 255, 255, 0.1);
+	color: var(--main-color, #0D77D9);
+}
+.ContextMenuItem[data-disabled],
+.ContextMenuCheckboxItem[data-disabled],
+.ContextMenuRadioItem[data-disabled],
+.ContextMenuSubTrigger[data-disabled] {
+	color: rgba(255, 255, 255, 0.4);
+	pointer-events: "none";
+	cursor: not-allowed;
+}
+.ContextMenuItem[data-highlighted],
+.ContextMenuCheckboxItem[data-highlighted],
+.ContextMenuRadioItem[data-highlighted],
+.ContextMenuSubTrigger[data-highlighted] {
+	background-color: var(--main-color, #0D77D9);
+	color: #fff;
+}
+
+.ContextMenuLabel {
+	padding-left: 25px;
+	font-size: 12px;
+	line-height: 25px;
+	color: rgba(255, 255, 255, 0.6);
+}
+
+.ContextMenuSeparator {
+	height: 1px;
+	background-color: rgba(255, 255, 255, 0.1);
+	margin: 5px;
+}
+
+.ContextMenuItemIndicator {
+	position: absolute;
+	left: 0;
+	width: 25px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.RightSlot {
+	margin-left: auto;
+	padding-left: 20px;
+	color: rgba(255, 255, 255, 0.6);
+}
+[data-highlighted] > .RightSlot {
+	color: rgba(255, 255, 255, 0.9);
+}
+[data-disabled] .RightSlot {
+	color: rgba(255, 255, 255, 0.3);
+}
