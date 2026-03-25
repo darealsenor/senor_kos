@@ -50,6 +50,7 @@ export const VisibilityProvider: React.FC<{ children: React.ReactNode }> = ({
       }}
     >
       <div
+        id="nui-app"
         style={{ visibility: visible ? "visible" : "hidden", height: "100%" }}
       >
         {children}
