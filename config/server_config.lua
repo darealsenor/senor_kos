@@ -1,11 +1,12 @@
-ServerConfig = ServerConfig or {}
+ServerConfig = {}
 
-ServerConfig.Timer = ServerConfig.Timer or {}
-ServerConfig.Timer.CheckInterval = 500
+ServerConfig.Timer = {
+    CheckInterval = 500,
+}
 
-ServerConfig.KOS = ServerConfig.KOS or {}
-ServerConfig.KOS.RoundDurationSeconds = 10 * 60
-ServerConfig.KOS.MatchCleanupDurationSeconds = 45 * 60
-ServerConfig.KOS.RespawnDelayMs = 350
-ServerConfig.KOS.RespawnDelayAfterRoundBreakMs = 650
-ServerConfig.KOS.RespawnDelayAfterTeleportMs = 250
+ServerConfig.KOS = {
+    RoundDurationSeconds = 10 * 60,
+    MatchCleanupDurationSeconds = 45 * 60,
+    RespawnDelayAfterRoundBreakMs = 650,
+    RespawnDelayAfterTeleportMs = 2000,
+}

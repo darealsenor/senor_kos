@@ -55,10 +55,14 @@ end
 local function upsertGangs()
     local gangs = Bridge.gangs.GetGangs()
     for gangName, gangData in pairs(gangs) do
-        MySQL.query([[
-            INSERT IGNORE INTO `kos_gangs` (`gang_key`, `gang_name`, `kills`, `deaths`, `matches_played`, `wins`, `losses`)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        ]], { gangName, gangData.label, 0, 0, 0, 0, 0 })
+        local gangLabel = (gangData and (gangData.label or gangData.name)) or gangName
+        local blocked = Shared.IsGangBlacklisted(gangName, gangLabel)
+        if not blocked then
+            MySQL.query([[
+                INSERT IGNORE INTO `kos_gangs` (`gang_key`, `gang_name`, `kills`, `deaths`, `matches_played`, `wins`, `losses`)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ]], { gangName, gangLabel, 0, 0, 0, 0, 0 })
+        end
     end
 end
 

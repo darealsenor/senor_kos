@@ -1,9 +1,8 @@
 fx_version "cerulean"
 
-description "Basic React (TypeScript) & Lua Game Scripts Boilerplate"
-author "Project Error"
+description "KOS / Gang Fight"
+author "6enor - https://senor-scripts.tebex.io/"
 version '1.0.0'
-repository 'https://github.com/project-error/fivem-react-boilerplate-lua'
 
 lua54 'yes'
 
@@ -14,7 +13,6 @@ dependencies {
 
 games {
   "gta5",
-  "rdr3"
 }
 
 ui_page 'web/build/index.html'
@@ -22,10 +20,13 @@ ui_page 'web/build/index.html'
 shared_scripts {
   '@ox_lib/init.lua',
   'config/shared_config.lua',
+  'config/gangs_config.lua',
+  'config/interaction_config.lua',
   'config/maps.lua',
   'data/events.lua',
   'bridge/config.lua',
   'bridge/init.lua',
+
 }
 
 client_scripts {
@@ -33,19 +34,34 @@ client_scripts {
   'client/state.lua',
   'client/kill_detection.lua',
   'client/utils.lua',
+  'client/avatar.lua',
   'client/nui.lua',
-  'client/client.lua',
+  'client/round_announcer.lua',
+  'client/spectate.lua',
+  'client/interaction.lua',
 }
 
 server_scripts {
   '@oxmysql/lib/MySQL.lua',
   'config/server_config.lua',
+  'config/avatar_server_config.lua',
   'server/auto_creation_sql.lua',
-  'server/**/*',
+  'server/version.lua',
+  'server/avatar.lua',
+  'server/storage.lua',
+  'server/utils.lua',
+  'server/timer.lua',
+  'server/player.lua',
+  'server/class.lua',
+  'server/match_manager.lua',
+  'server/commands.lua',
+  'server/nui_callbacks.lua',
+  'server/debug.lua',
 }
 
 files {
 	'web/build/index.html',
 	'web/build/**/*',
+	'locales/*.json',
 	'bridge/**/client.lua',
 }

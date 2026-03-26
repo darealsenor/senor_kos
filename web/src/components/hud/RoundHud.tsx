@@ -19,15 +19,26 @@ function countAlive(players: KosMatchPayload['players'], team: 'teamA' | 'teamB'
   return n
 }
 
+/** Full team list for HUD portraits; alive first, then by player id. */
+function rosterForTeam(players: KosMatchPayload['players'], team: 'teamA' | 'teamB') {
+  return players
+    .filter((p) => p.team === team)
+    .sort((a, b) => {
+      if (a.alive !== b.alive) return a.alive ? -1 : 1
+      return a.id - b.id
+    })
+}
+
 interface RoundHudProps {
   data: KosMatchPayload
+  localPlayerId: number
   className?: string
 }
 
 /**
- * Top-center competitive layout: team alive counts, round timer, series score.
+ * Top-center bar: local team left, timer center, enemy right — dark panels with team tints.
  */
-export function RoundHud({ data, className }: RoundHudProps) {
+export function RoundHud({ data, localPlayerId, className }: RoundHudProps) {
   const [tick, setTick] = useState(0)
   const remainingBase = data.round.remainingSeconds
   const inRound = data.match.state === 'in_progress' && typeof remainingBase === 'number'
@@ -47,61 +58,140 @@ export function RoundHud({ data, className }: RoundHudProps) {
     return Math.max(0, (remainingBase as number) - tick)
   }, [inRound, remainingBase, tick])
 
-  const aliveA = countAlive(data.players, 'teamA')
-  const aliveB = countAlive(data.players, 'teamB')
+  const localTeam = data.players.find((p) => p.id === localPlayerId)?.team ?? 'teamA'
+  const leftTeam = localTeam
+  const rightTeam = leftTeam === 'teamA' ? 'teamB' : 'teamA'
+
+  const aliveLeft = countAlive(data.players, leftTeam)
+  const aliveRight = countAlive(data.players, rightTeam)
   const series = data.series
 
-  const redAlive = data.players.filter((p) => p.team === 'teamA' && p.alive)
-  const blueAlive = data.players.filter((p) => p.team === 'teamB' && p.alive)
+  const leftRoster = rosterForTeam(data.players, leftTeam)
+  const rightRoster = rosterForTeam(data.players, rightTeam)
+
+  const leftPortraitColor = leftTeam === 'teamA' ? 'red' : 'blue'
+  const rightPortraitColor = rightTeam === 'teamA' ? 'red' : 'blue'
+
+  const leftLabel = leftTeam === 'teamA' ? 'Team A' : 'Team B'
+  const rightLabel = rightTeam === 'teamA' ? 'Team A' : 'Team B'
+
+  const leftWins = series.wins[leftTeam]
+  const rightWins = series.wins[rightTeam]
 
   return (
     <div
       className={cn(
-        'pointer-events-none fixed left-1/2 top-3 z-hud flex -translate-x-1/2 flex-col items-center gap-1',
+        'pointer-events-none fixed left-1/2 top-1.5 z-hud flex -translate-x-1/2 flex-col items-center gap-0.5',
         className
       )}
     >
-      <div className="flex items-stretch overflow-hidden rounded-md border border-border bg-transparent p-0">
-        <div className="flex min-w-[160px] flex-col items-center justify-center gap-2 border-r border-border px-4 py-3">
-          <div className="flex w-full items-center justify-between">
-            <span className="text-[10px] font-bold tracking-tight text-red-400">Red</span>
-            <span className="text-[12px] font-bold text-red-400">{series.wins.teamA}</span>
+      <div
+        className="flex items-stretch overflow-hidden rounded-sm border border-white/10 shadow-sm"
+        style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.90)' }}
+      >
+        <div
+          className={cn(
+            'flex min-w-[108px] flex-col items-center justify-center gap-0.5 border-r border-white/10 px-2 py-1.5',
+            leftPortraitColor === 'red' ? 'bg-red-500/[0.08]' : 'bg-blue-500/[0.08]'
+          )}
+        >
+          <div className="flex w-full items-center justify-between gap-1">
+            <span
+              className={cn(
+                'text-[8px] font-bold uppercase tracking-wide',
+                leftPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'
+              )}
+            >
+              {leftLabel}
+            </span>
+            <span
+              className={cn(
+                'text-[10px] font-bold tabular-nums',
+                leftPortraitColor === 'red' ? 'text-red-200' : 'text-blue-200'
+              )}
+            >
+              {leftWins}
+            </span>
           </div>
-          <div className="flex w-full flex-wrap items-center justify-center gap-2">
-            {redAlive.map((p) => (
-              <PlayerPortrait key={p.id} image={p.avatar} dead={false} team="red" size={30} showAliveDot />
+          <div className="flex w-full flex-wrap items-center justify-center gap-0.5">
+            {leftRoster.map((p) => (
+              <PlayerPortrait
+                key={p.id}
+                image={p.avatar}
+                dead={!p.alive}
+                team={leftPortraitColor}
+                size={20}
+                scheme="team"
+                showTeamLine={false}
+              />
             ))}
           </div>
-          <span className="text-[10px] text-muted-foreground">{aliveA} alive</span>
+          <span className="text-[8px] font-medium text-zinc-400">{aliveLeft} alive</span>
         </div>
 
-        <div className="flex min-w-[190px] flex-col items-center justify-center px-5 py-3">
-          <span className="text-[10px] font-semibold tracking-tight text-muted-foreground">
+        <div
+          className="flex min-w-[124px] flex-col items-center justify-center gap-0 px-2 py-1.5"
+          style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.82)' }}
+        >
+          <span className="text-[8px] font-semibold uppercase tracking-wide text-zinc-500">
             Round {series.index}/{series.total}
           </span>
-          <span className="font-display text-3xl font-black tabular-nums tracking-tight text-foreground">
+          <span className="font-display text-xl font-black tabular-nums leading-tight tracking-tight text-amber-100">
             {displaySeconds !== null ? formatClock(displaySeconds) : '—'}
           </span>
-          <span className="text-[10px] text-muted-foreground">
-            Score {series.wins.teamA} : {series.wins.teamB}
+          <span className="text-[8px] font-medium text-zinc-400">
+            Score{' '}
+            <span className={leftPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'}>{leftWins}</span>
+            <span className="mx-0.5 text-zinc-600">:</span>
+            <span className={rightPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'}>{rightWins}</span>
           </span>
         </div>
 
-        <div className="flex min-w-[160px] flex-col items-center justify-center gap-2 border-l border-border px-4 py-3">
-          <div className="flex w-full items-center justify-between">
-            <span className="text-[10px] font-bold tracking-tight text-blue-400">Blue</span>
-            <span className="text-[12px] font-bold text-blue-400">{series.wins.teamB}</span>
+        <div
+          className={cn(
+            'flex min-w-[108px] flex-col items-center justify-center gap-0.5 border-l border-white/10 px-2 py-1.5',
+            rightPortraitColor === 'red' ? 'bg-red-500/[0.08]' : 'bg-blue-500/[0.08]'
+          )}
+        >
+          <div className="flex w-full items-center justify-between gap-1">
+            <span
+              className={cn(
+                'text-[8px] font-bold uppercase tracking-wide',
+                rightPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'
+              )}
+            >
+              {rightLabel}
+            </span>
+            <span
+              className={cn(
+                'text-[10px] font-bold tabular-nums',
+                rightPortraitColor === 'red' ? 'text-red-200' : 'text-blue-200'
+              )}
+            >
+              {rightWins}
+            </span>
           </div>
-          <div className="flex w-full flex-wrap items-center justify-center gap-2">
-            {blueAlive.map((p) => (
-              <PlayerPortrait key={p.id} image={p.avatar} dead={false} team="blue" size={30} showAliveDot />
+          <div className="flex w-full flex-wrap items-center justify-center gap-0.5">
+            {rightRoster.map((p) => (
+              <PlayerPortrait
+                key={p.id}
+                image={p.avatar}
+                dead={!p.alive}
+                team={rightPortraitColor}
+                size={20}
+                scheme="team"
+                showTeamLine={false}
+              />
             ))}
           </div>
-          <span className="text-[10px] text-muted-foreground">{aliveB} alive</span>
+          <span className="text-[8px] font-medium text-zinc-400">{aliveRight} alive</span>
         </div>
       </div>
       {data.map?.name && (
-        <span className="rounded border border-border bg-transparent px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+        <span
+          className="rounded-sm border border-white/10 px-1.5 py-px text-[8px] font-medium text-zinc-400"
+          style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.90)' }}
+        >
           {data.map.name}
         </span>
       )}

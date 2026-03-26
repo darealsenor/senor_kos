@@ -29,6 +29,39 @@ local function buildDebugPlayers()
     return players
 end
 
+---@param preferredSource number
+---@return table
+local function buildSpectateDebugPlayers(preferredSource)
+    local online = GetPlayers()
+    local selected = {}
+    local used = {}
+
+    local preferred = tonumber(preferredSource)
+    if preferred and preferred > 0 then
+        selected[#selected + 1] = {
+            id = preferred,
+            team = 'teamA',
+        }
+        used[preferred] = true
+    end
+
+    for i = 1, #online do
+        local id = tonumber(online[i])
+        if id and not used[id] then
+            selected[#selected + 1] = {
+                id = id,
+                team = 'teamA',
+            }
+            used[id] = true
+            if #selected >= 2 then
+                break
+            end
+        end
+    end
+
+    return selected
+end
+
 lib.addCommand('kos:debug_create', {
     help = 'Spin up a test match with whoever is online',
     params = {
@@ -69,6 +102,54 @@ lib.addCommand('kos:debug_create', {
     end
     lib.print.debug(('kos debug: created %s (%d players, host src %s)'):format(matchId, #players, tostring(source)))
     notify(source, ('Match %s, %d players'):format(matchId, #players), 'success')
+end)
+
+lib.addCommand('kos:debug_spectate', {
+    help = 'Start a 2-player competitive test match with both players on Team A',
+    params = {
+        { name = 'rounds', type = 'number', help = 'How many rounds', optional = true },
+        { name = 'map', type = 'string', help = 'Map id from maps.lua', optional = true },
+    },
+    restricted = 'group.admin',
+}, function(source, args)
+    local players = buildSpectateDebugPlayers(source)
+    if #players < 2 then
+        notify(source, 'Need two online players for spectate debug', 'error')
+        return
+    end
+
+    local rounds = tonumber(args.rounds) or 3
+    local mapId = args.map
+    if mapId == '' then
+        mapId = nil
+    end
+
+    local hostId = source > 0 and source or players[1].id
+    local matchId = matchManager.CreateMatch({
+        hostId = hostId,
+        mode = 'competitive',
+        amount = 0,
+        rounds = rounds,
+        mapId = mapId,
+        players = players,
+        teams = {
+            teamA = { players = {} },
+            teamB = { players = {} },
+        },
+    })
+
+    if not matchId then
+        notify(source, 'Could not start spectate debug match', 'error')
+        return
+    end
+
+    lib.print.debug(('kos debug spectate: created %s (players %s and %s, host %s)'):format(
+        tostring(matchId),
+        tostring(players[1] and players[1].id),
+        tostring(players[2] and players[2].id),
+        tostring(hostId)
+    ))
+    notify(source, ('Spectate debug match %s started'):format(matchId), 'success')
 end)
 
 lib.addCommand('kos:debug_stop', {
@@ -118,15 +199,4 @@ lib.addCommand('kos:debug_list', {
     end
     local msg = count == 1 and '1 match running' or ('%d matches running'):format(count)
     notify(source, msg, 'inform')
-end)
-
-lib.addCommand('kos:admin', {
-    help = 'Open the KOS admin NUI',
-    params = {},
-    restricted = 'group.admin',
-}, function(source)
-    if source <= 0 then
-        return
-    end
-    TriggerClientEvent(Events.CLIENT_OPEN_ADMIN, source, {})
 end)

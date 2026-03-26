@@ -1,8 +1,6 @@
 import type { KosMatchPayload, MatchNuiMessage } from '@/types/match'
 
-/**
- * Sample match payload aligned with server GetMatchData for local UI work.
- */
+
 export function mockMatchPayload(): KosMatchPayload {
   const now = Math.floor(Date.now() / 1000)
   return {

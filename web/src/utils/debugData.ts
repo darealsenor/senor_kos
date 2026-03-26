@@ -15,7 +15,7 @@ interface DebugEvent<T = unknown> {
 export const debugData = (events: DebugEvent<unknown>[], timer = 1000): void => {
   if (import.meta.env.MODE === "development" && isEnvBrowser()) {
     for (const event of events) {
-      setTimeout(() => {
+      if (timer === 0) {
         window.dispatchEvent(
           new MessageEvent("message", {
             data: {
@@ -24,7 +24,18 @@ export const debugData = (events: DebugEvent<unknown>[], timer = 1000): void => 
             },
           }),
         );
-      }, timer);
+      } else {
+        setTimeout(() => {
+          window.dispatchEvent(
+            new MessageEvent("message", {
+              data: {
+                action: event.action,
+                data: event.data,
+              },
+            }),
+          );
+        }, timer);
+      }
     }
   }
 };

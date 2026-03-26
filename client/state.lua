@@ -25,6 +25,34 @@ function KOSState.clear()
     TriggerEvent(Events.CLIENT_STATE_UPDATED, KOSState.getSnapshot())
 end
 
+
+---@param aliveOnly boolean|nil
+---@return string|nil, table
+function KOSState.getMyTeam(aliveOnly)
+    if not KOSState.matchData then
+        return nil, {}
+    end
+    local myId = cache.serverId
+    local players = KOSState.matchData.players
+    local myTeam = nil
+    for i = 1, #players do
+        local player = players[i]
+        if player.id == myId then
+            myTeam = player.team
+            break
+        end
+    end
+
+    local myTeamPlayers = {}
+    for i = 1, #players do
+        local player = players[i]
+        if player.team == myTeam and player.id ~= myId and (not aliveOnly or player.alive == true) then
+            myTeamPlayers[#myTeamPlayers + 1] = player
+        end
+    end
+    return myTeam, myTeamPlayers
+end
+
 ---@return { inMatch: boolean, matchId: string|nil, matchData: table|nil }
 function KOSState.getSnapshot()
     return {
@@ -45,6 +73,7 @@ end)
 RegisterNetEvent(Events.CLIENT_MATCH_CREATED, function(matchId)
     TriggerEvent('kos:client:matchCreated', matchId)
 end)
+
 
 RegisterCommand('kos:state', function()
     lib.print.debug(KOSState.getSnapshot())

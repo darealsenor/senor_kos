@@ -24,8 +24,16 @@ AddEventHandler('gameEventTriggered', function(event, data)
         end
     end
 
+    local meters = 0
+    if killerPed and killerPed ~= cache.ped then
+        local killerCoords = GetEntityCoords(killerPed)
+        local victimCoords = GetEntityCoords(cache.ped)
+        meters = math.floor(#(killerCoords - victimCoords))
+    end
+
     TriggerServerEvent('kos:playerDied', {
         killerServerId = killerServerId,
         headshot = headshot,
+        meters = meters,
     })
 end)

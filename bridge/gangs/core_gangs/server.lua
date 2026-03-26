@@ -19,19 +19,22 @@ function gang.GetGangs()
     local gangs = {}
     if query then
         for _, gang in pairs(query) do
-            -- mimic qbox gangs structure
-            gangs[gang.name] = {
-                label = gang.name,
-                grades = {
-                    [0] = {
-                        name = 'Member',
-                        level = 0,
-                        grade = 0,
-                        isboss = false,
-                        bankAuth = false
+            local gangKey = tostring(gang.name or '')
+            local gangLabel = tostring(gang.name or gangKey)
+            if gangKey ~= '' and not Shared.IsGangBlacklisted(gangKey, gangLabel) then
+                gangs[gangKey] = {
+                    label = gangLabel,
+                    grades = {
+                        [0] = {
+                            name = 'Member',
+                            level = 0,
+                            grade = 0,
+                            isboss = false,
+                            bankAuth = false
+                        }
                     }
                 }
-            }
+            end
         end
     end
     return gangs
@@ -43,17 +46,32 @@ function gang.GetGangByName(gangName)
     if not gangName then
         return nil
     end
-    local gangs = gang.GetGangs() or {}
+    local gangs = gang.GetGangs()
     local found = gangs[gangName]
+    local gangLabel = (found and (found.label or found.name)) or gangName
+    if Shared.IsGangBlacklisted(gangName, gangLabel) then
+        return nil
+    end
     return {
         name = gangName,
-        label = (found and (found.label or found.name)) or gangName,
+        label = gangLabel,
     }
 end
 
 ---@param _playerId number
 ---@return table|nil
 function gang.GetPlayerGang(_playerId)
+    local playerGang = exports['core_gangs']:getPlayerOrganization(_playerId)
+    if playerGang then
+        local gangName = tostring(playerGang)
+        if Shared.IsGangBlacklisted(gangName, gangName) then
+            return nil
+        end
+        return {
+            name = gangName,
+            label = gangName,
+        }
+    end
     return nil
 end
 

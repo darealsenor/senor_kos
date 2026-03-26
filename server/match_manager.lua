@@ -74,6 +74,54 @@ local function getMatchByPlayer(sourceId)
     return matchesById[matchId]
 end
 
+---@param playerId number
+---@return nil
+local function onPlayerLeft(playerId)
+    local pid = tonumber(playerId)
+    pid = pid and math.floor(pid) or 0
+    if pid <= 0 then
+        return
+    end
+    local match = getMatchByPlayer(pid)
+    if not match then
+        return
+    end
+    lib.print.debug(('player %s left during %s'):format(tostring(pid), match.id))
+    match:RemovePlayer(pid)
+    playerToMatch[pid] = nil
+end
+
+---@param playerId number
+---@return boolean
+local function isPlayerInMatch(playerId)
+    local pid = tonumber(playerId)
+    pid = pid and math.floor(pid) or 0
+    if pid <= 0 then
+        return false
+    end
+    for _, match in pairs(matchesById) do
+        local roster = match:GetPlayers()
+        local ids = roster and roster.playerIds or nil
+        if ids then
+            for i = 1, #ids do
+                if ids[i] == pid then
+                    return true
+                end
+            end
+        end
+    end
+    return false
+end
+
+---@param matchId string
+---@return table|nil
+local function getMatchById(matchId)
+    if not matchId or matchId == '' then
+        return nil
+    end
+    return matchesById[matchId]
+end
+
 AddEventHandler('kos:server:matchExpired', function(matchId)
     if not matchId or matchesById[matchId] == nil then
         return
@@ -89,17 +137,22 @@ RegisterNetEvent('kos:playerDied', function(data)
     end
     local killerServerId = data and data.killerServerId or nil
     local headshot = data and data.headshot or false
+    local meters = data and tonumber(data.meters) or 0
     lib.print.debug(('%s died in %s (killer %s, hs: %s)'):format(
         tostring(victimId),
         match.id,
         killerServerId and tostring(killerServerId) or '?',
         headshot and 'yes' or 'no'
     ))
-    match:OnPlayerKilled(victimId, killerServerId, headshot)
+    match:OnPlayerKilled(victimId, killerServerId, headshot, meters, nil)
 end)
 
 RegisterNetEvent('kos:server:createMatch', function(data)
     local sourceId = source
+    if not Bridge.framework.IsAdmin(sourceId) then
+        lib.print.warn(('createMatch denied for %s'):format(tostring(sourceId)))
+        return
+    end
     local matchId = createMatch(data)
     lib.print.debug(('createMatch: %s -> %s'):format(tostring(sourceId), tostring(matchId)))
     if matchId then
@@ -107,15 +160,8 @@ RegisterNetEvent('kos:server:createMatch', function(data)
     end
 end)
 
-AddEventHandler('playerDropped', function()
-    local playerId = source
-    local match = getMatchByPlayer(playerId)
-    if not match then
-        return
-    end
-    lib.print.debug(('player %s disconnected during %s'):format(tostring(playerId), match.id))
-    match:RemovePlayer(playerId)
-    playerToMatch[playerId] = nil
+AddEventHandler(Events.SERVER_PLAYER_DROPPED, function(playerId)
+    onPlayerLeft(playerId)
 end)
 
 ---@return table<string, table>
@@ -147,6 +193,8 @@ exports('ListMatches', listMatches)
 exports('GetMatchData', getMatchData)
 exports('GetMatchScoreboard', getMatchData)
 exports('GetMatchForPlayer', getMatchByPlayer)
+exports('GetMatchById', getMatchById)
+exports('IsPlayerInMatch', isPlayerInMatch)
 
 return {
     CreateMatch = createMatch,
@@ -155,4 +203,6 @@ return {
     GetMatchData = getMatchData,
     GetMatchScoreboard = getMatchData,
     GetMatchForPlayer = getMatchByPlayer,
+    GetMatchById = getMatchById,
+    IsPlayerInMatch = isPlayerInMatch,
 }

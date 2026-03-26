@@ -6,19 +6,23 @@ function gang.GetGangs()
     local gangs = {}
     for _, org in pairs(opGangs) do
         if org and org.name then
-            gangs[org.name] = {
-                name = org.name,
-                label = org.label or org.name,
-                grades = {
-                    [0] = {
-                        name = 'Member',
-                        level = 0,
-                        grade = 0,
-                        isboss = false,
-                        bankAuth = false
+            local gangName = tostring(org.name)
+            local gangLabel = tostring(org.label or org.name)
+            if not Shared.IsGangBlacklisted(gangName, gangLabel) then
+                gangs[gangName] = {
+                    name = gangName,
+                    label = gangLabel,
+                    grades = {
+                        [0] = {
+                            name = 'Member',
+                            level = 0,
+                            grade = 0,
+                            isboss = false,
+                            bankAuth = false
+                        }
                     }
                 }
-            }
+            end
         end
     end
     return gangs
@@ -31,15 +35,19 @@ function gang.GetGangByName(gangName)
         return nil
     end
     local found = gang.GetGangs()[gangName]
+    local gangLabel = (found and (found.label or found.name)) or gangName
+    if Shared.IsGangBlacklisted(gangName, gangLabel) then
+        return nil
+    end
     if not found then
         return {
             name = gangName,
-            label = gangName,
+            label = gangLabel,
         }
     end
     return {
         name = gangName,
-        label = found.label or found.name or gangName,
+        label = gangLabel,
     }
 end
 

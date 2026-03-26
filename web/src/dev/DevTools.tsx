@@ -18,6 +18,8 @@ export function DevTools() {
   const toggleScoreboard = useNuiStore((s) => s.toggleScoreboard)
   const adminOpen = useNuiStore((s) => s.adminOpen)
   const setAdminOpen = useNuiStore((s) => s.setAdminOpen)
+  const setMenuMaps = useNuiStore((s) => s.setMenuMaps)
+  const setIsAdmin = useNuiStore((s) => s.setIsAdmin)
 
   useEffect(() => {
     debugData([{ action: 'setVisible', data: Boolean(matchData) || adminOpen }], 0)
@@ -54,15 +56,22 @@ export function DevTools() {
           </Button>
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="kos-dev-admin">Admin panel</Label>
+          <Label htmlFor="kos-dev-admin">KOS menu</Label>
           <Button
             id="kos-dev-admin"
             type="button"
             size="sm"
             variant="outline"
-            onClick={() => setAdminOpen((open) => !open)}
+            onClick={() => {
+              setIsAdmin(true)
+              setMenuMaps([
+                { id: 'groove_street', name: 'Groove Street' },
+                { id: 'legion_square', name: 'Legion Square' },
+              ])
+              setAdminOpen((open) => !open)
+            }}
           >
-            {adminOpen ? 'Close admin' : 'Open admin'}
+            {adminOpen ? 'Close menu' : 'Open menu (admin)'}
           </Button>
         </div>
       </CardContent>

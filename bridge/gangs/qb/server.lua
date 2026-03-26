@@ -4,7 +4,16 @@ local QBCore = exports['qb-core']:GetCoreObject()
 
 ---@return table<string, table>
 function gang.GetGangs()
-    return QBCore.Shared.Gangs
+    local raw = QBCore.Shared.Gangs or {}
+    local out = {}
+    for key, value in pairs(raw) do
+        local gangKey = tostring(key)
+        local gangLabel = (value and (value.label or value.name)) or gangKey
+        if not Shared.IsGangBlacklisted(gangKey, gangLabel) then
+            out[gangKey] = value
+        end
+    end
+    return out
 end
 
 ---@param gangName string|nil
@@ -15,9 +24,13 @@ function gang.GetGangByName(gangName)
     end
     local gangs = gang.GetGangs() or {}
     local found = gangs[gangName]
+    local gangLabel = (found and (found.label or found.name)) or gangName
+    if Shared.IsGangBlacklisted(gangName, gangLabel) then
+        return nil
+    end
     return {
         name = gangName,
-        label = (found and (found.label or found.name)) or gangName,
+        label = gangLabel,
     }
 end
 
@@ -32,9 +45,14 @@ function gang.GetPlayerGang(playerId)
     if not gangData or not gangData.name then
         return nil
     end
+    local gangName = tostring(gangData.name)
+    local gangLabel = tostring(gangData.label or gangData.name)
+    if Shared.IsGangBlacklisted(gangName, gangLabel) then
+        return nil
+    end
     return {
-        name = tostring(gangData.name),
-        label = tostring(gangData.label or gangData.name),
+        name = gangName,
+        label = gangLabel,
     }
 end
 

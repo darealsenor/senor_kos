@@ -17,6 +17,9 @@ function gang.GetGangByName(gangName)
     if not gangName then
         return nil
     end
+    if Shared.IsGangBlacklisted(gangName, gangName) then
+        return nil
+    end
     return {
         name = gangName,
         label = gangName,

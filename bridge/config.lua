@@ -23,4 +23,8 @@ ConfigBridge = {
         { resource = 'esx_ambulancejob', folder = 'esx_ambulancejob' },
         { resource = 'wasabi_ambulance', folder = 'wasabi_ambulance' },
     },
+    targets = {
+        { resource = "ox_target", folder = "ox" },
+        { resource = "qb-target", folder = "qb" }
+    }
 }

@@ -13,11 +13,14 @@ interface PlayerPortraitProps {
   team: TeamColor
   size?: number
   showAliveDot?: boolean
+  scheme?: 'team' | 'neutral'
+  showTeamLine?: boolean
 }
 
 /**
  * Small player portrait used in scoreboard and top HUD.
  * Dead players show a skull overlay and a stronger team-colored glow line.
+ * Set `showTeamLine` false for compact rows (e.g. top HUD).
  */
 export function PlayerPortrait({
   image,
@@ -25,13 +28,17 @@ export function PlayerPortrait({
   team,
   size = 42,
   showAliveDot = false,
+  scheme = 'team',
+  showTeamLine = true,
 }: PlayerPortraitProps) {
   const avatarSrc = image || BLANK_AVATAR
 
   const teamBase =
-    team === 'red'
-      ? { ring: 'border-red-500/30', line: 'bg-red-500/22' }
-      : { ring: 'border-blue-500/30', line: 'bg-blue-500/22' }
+    scheme === 'neutral'
+      ? { ring: 'border-border', line: 'bg-muted-foreground/25' }
+      : team === 'red'
+        ? { ring: 'border-red-500/30', line: 'bg-red-500/22' }
+        : { ring: 'border-blue-500/30', line: 'bg-blue-500/22' }
 
   const deadRing = dead ? 'border-white/10' : teamBase.ring
 
@@ -53,8 +60,13 @@ export function PlayerPortrait({
         />
         {dead && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="rounded-full bg-black/70 p-2">
-              <Skull className={cn('size-6', team === 'red' ? 'text-red-300' : 'text-blue-300')} />
+            <div className={cn('rounded-full bg-black/70', size < 28 ? 'p-1' : 'p-2')}>
+              <Skull
+                className={cn(
+                  size < 28 ? 'size-3.5' : 'size-6',
+                  scheme === 'neutral' ? 'text-foreground/70' : team === 'red' ? 'text-red-300' : 'text-blue-300'
+                )}
+              />
             </div>
           </div>
         )}
@@ -62,18 +74,20 @@ export function PlayerPortrait({
           <span
             className={cn(
               'absolute bottom-1 right-1 size-2 rounded-full',
-              team === 'red' ? 'bg-red-500' : 'bg-blue-500',
+              scheme === 'neutral' ? 'bg-muted-foreground' : team === 'red' ? 'bg-red-500' : 'bg-blue-500',
               'shadow-[0_0_8px_rgba(255,255,255,0.12)]'
             )}
           />
         )}
       </div>
-      <div
-        className={cn(
-          'mt-[6px] h-[3px] w-[70%] rounded-full',
-          dead ? 'bg-muted-foreground/20' : teamBase.line
-        )}
-      />
+      {showTeamLine ? (
+        <div
+          className={cn(
+            'mt-[6px] h-[3px] w-[70%] rounded-full',
+            dead ? 'bg-muted-foreground/20' : teamBase.line
+          )}
+        />
+      ) : null}
     </div>
   )
 }

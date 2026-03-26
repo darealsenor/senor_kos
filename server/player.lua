@@ -1,8 +1,9 @@
 local KOSPlayer = lib.class('KOSPlayer')
 local storage = require 'server.storage'
+local utils = require 'server.utils'
+local Avatar = require 'server.avatar'
 
-local respawnDelayMs = math.max(0, tonumber(ServerConfig.KOS.RespawnDelayMs) or 350)
-local respawnAfterTeleportMs = math.max(0, tonumber(ServerConfig.KOS.RespawnDelayAfterTeleportMs) or 250)
+local respawnAfterTeleportMs = math.max(0, tonumber(ServerConfig.KOS.RespawnDelayAfterTeleportMs) or 2000)
 
 ---@param playerId number
 ---@return string|nil
@@ -24,6 +25,7 @@ function KOSPlayer:constructor(playerId)
     self.name = Bridge.framework.GetPlayerName(playerId)
     self.avatar = nil
     self.team = nil
+    self.oldCoords = nil
     self.alive = true
     self.gang = Bridge.gangs.GetPlayerGang(playerId)
     self.memory = {
@@ -46,6 +48,44 @@ function KOSPlayer:constructor(playerId)
     }
     self.persistant = self.persistent
     self:LoadPersistent()
+    CreateThread(function()
+        Wait(1500)
+        local resolvedAvatar = Avatar.Get(playerId)
+        if resolvedAvatar and resolvedAvatar ~= '' and resolvedAvatar ~= self.avatar then
+            self.avatar = resolvedAvatar
+            storage.UpsertPlayerStats(self:ToSavePayload())
+        end
+    end)
+    self.spectating = false
+end
+
+---@return nil
+function KOSPlayer:CaptureOldCoords()
+    local playerId = self.playerId
+    if not playerId then
+        return
+    end
+    local ped = GetPlayerPed(playerId)
+    if not ped or ped == 0 then
+        return
+    end
+    local coords = GetEntityCoords(ped)
+    local heading = GetEntityHeading(ped)
+    self.oldCoords = {
+        x = coords.x,
+        y = coords.y,
+        z = coords.z,
+        w = heading,
+    }
+end
+
+---@param playerId number|nil
+---@return nil
+function KOSPlayer:RespawnAtOldCoords(playerId)
+    CreateThread(function()
+        Wait(2000)
+        self:Respawn(self.oldCoords, playerId or self.playerId)
+    end)
 end
 
 ---@param kind string|nil
@@ -149,9 +189,10 @@ function KOSPlayer:FinalizeMatch(didWin)
     self:FlushMemoryToPersistent()
 end
 
+---@param playerId number|nil
 ---@return nil
-function KOSPlayer:Revive()
-    local id = self.playerId
+function KOSPlayer:Revive(playerId)
+    local id = playerId or self.playerId
     if not id then
         lib.print.debug('revive: no player id, ignoring')
         return
@@ -194,46 +235,52 @@ function KOSPlayer:MatchDataPlayer()
 end
 
 ---@param map table|nil
----@param extraDelayMs number|nil Added to RespawnDelayMs (used between rounds).
 ---@return nil
-function KOSPlayer:RespawnAtTeamSpawn(map, extraDelayMs)
-    local waitBefore = respawnDelayMs + math.max(0, tonumber(extraDelayMs) or 0)
-    local waitAfterTp = respawnAfterTeleportMs
+function KOSPlayer:RespawnAtTeamSpawn(map)
+    self:Respawn(utils.pickSpawn(map, (self.team and self.team ~= '') and self.team or 'teamA'))
+end
+
+---@param vec vector4|table|nil
+---@param playerId number|nil
+---@return nil
+function KOSPlayer:Respawn(vec, playerId)
+    local id = playerId or self.playerId
+    if not id then
+        lib.print.debug('respawn: no player id, ignoring')
+        return
+    end
     CreateThread(function()
-        if waitBefore > 0 then
-            Wait(waitBefore)
-        end
-        if not self.playerId then
-            return
-        end
         self:MarkAlive()
-        self:TeleportToMapSpawn(map)
-        if waitAfterTp > 0 then
-            Wait(waitAfterTp)
+        self:Teleport(vec, id)
+        if respawnAfterTeleportMs > 0 then
+            Wait(respawnAfterTeleportMs)
         end
-        if not self.playerId then
-            return
-        end
-        self:Revive()
+        self:Revive(id)
     end)
 end
 
 ---@param vec vector4|table|nil
+---@param playerId number|nil
 ---@return nil
-function KOSPlayer:Teleport(vec)
-    if not vec then
-        lib.print.debug(('tp: no coords (player %s)'):format(tostring(self.playerId)))
+function KOSPlayer:Teleport(vec, playerId)
+    local id = playerId or self.playerId
+    if not id then
+        lib.print.debug('tp: no player id, ignoring')
         return
     end
-    local ped = GetPlayerPed(self.playerId)
+    if not vec then
+        lib.print.debug(('tp: no coords (player %s)'):format(tostring(id)))
+        return
+    end
+    local ped = GetPlayerPed(id)
     if not ped or ped == 0 then
-        lib.print.debug(('tp: no ped for player %s'):format(tostring(self.playerId)))
+        lib.print.debug(('tp: no ped for player %s'):format(tostring(id)))
         return
     end
     SetEntityCoords(ped, vec.x, vec.y, vec.z, false, false, false, false)
     SetEntityHeading(ped, vec.w)
     lib.print.debug(('tp player %s -> %.1f, %.1f, %.1f  h %.0f'):format(
-        tostring(self.playerId), vec.x, vec.y, vec.z, vec.w))
+        tostring(id), vec.x, vec.y, vec.z, vec.w))
 end
 
 ---@param map table|nil
@@ -255,6 +302,19 @@ end
 
 function KOSPlayer:remove()
     self.playerId = nil
+    if self.spectating then
+        self:stopSpectate()
+    end
+end
+
+function KOSPlayer:startSpectate()
+    self.spectating = true
+    TriggerClientEvent('kos:player:startSpectate', self.playerId)
+end
+
+function KOSPlayer:stopSpectate()
+    self.spectating = false
+    TriggerClientEvent('kos:player:stopSpectate', self.playerId)
 end
 
 return KOSPlayer
