@@ -41,6 +41,7 @@ export interface MatchHistoryRow {
   matchId: string
   winnerTeam?: string | null
   winnerGang?: { name?: string; label?: string } | null
+  loserGang?: { name?: string; label?: string } | null
   duration: number
   endedAt: string | number
 }

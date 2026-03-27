@@ -167,7 +167,7 @@ export function MatchHistoryTab() {
                   <TableCell className="tabular-nums">{r.id}</TableCell>
                   <TableCell className="text-muted-foreground">{formatEndedAt(r.endedAt)}</TableCell>
                   <TableCell>{r.winnerGang?.label ?? r.winnerTeam ?? '—'}</TableCell>
-                  <TableCell>{loserTeam ?? '—'}</TableCell>
+                  <TableCell>{r.loserGang?.label ?? loserTeam ?? '—'}</TableCell>
                   <TableCell className="text-right">
                     <Button type="button" size="sm" variant="outline" onClick={() => void openDetails(r.id)} disabled={detailsLoading}>
                       {t('manage')}
@@ -176,16 +176,6 @@ export function MatchHistoryTab() {
                 </TableRow>
               )
             })}
-            {total > 0 &&
-              Array.from({ length: Math.max(0, PER_PAGE - rows.length) }).map((_, i) => (
-                <TableRow key={`m-empty-${i}`} className="opacity-40">
-                  <TableCell />
-                  <TableCell />
-                  <TableCell />
-                  <TableCell />
-                  <TableCell />
-                </TableRow>
-              ))}
             {total === 0 && !loading && (
               <TableRow>
                 <TableCell colSpan={5} className="text-sm text-muted-foreground">
@@ -263,13 +253,7 @@ export function MatchHistoryTab() {
                   </div>
                   <div className="text-sm">
                     <div className="text-muted-foreground">{t('loser')}</div>
-                    <div>
-                      {(() => {
-                        const loserTeam = loserTeamFromWinner(details.winnerTeam)
-                        const loser = details.participants.find((p) => p.team === loserTeam && p.gang?.label)?.gang?.label
-                        return loserTeam ? loser ?? loserTeam : '—'
-                      })()}
-                    </div>
+                    <div>{details.loserGang?.label ?? loserTeamFromWinner(details.winnerTeam) ?? '—'}</div>
                   </div>
                 </div>
 
@@ -313,4 +297,3 @@ export function MatchHistoryTab() {
     </Card>
   )
 }
-

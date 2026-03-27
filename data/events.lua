@@ -1,3 +1,5 @@
+-- i should remove that shit cause i was 
+-- not consistent with all the events/callbacks
 Events = {
     SERVER_PLAYER_DROPPED = 'kos:server:playerDropped',
     CLIENT_MATCH_DATA_SYNC = 'kos:client:matchDataSync',

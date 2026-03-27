@@ -1,6 +1,6 @@
-local storage = require 'server.storage'
-local matchManager = require 'server.match_manager'
-local Avatar = require 'server.avatar'
+local storage = Storage
+local matchManager = MatchManager
+local avatarModule = Avatar
 local canPlayerSpectate = Shared.Spectate.players == true
 
 ---@param source number
@@ -216,9 +216,19 @@ lib.callback.register('kos:server:getMatchHistory', function(source, data)
     end
     local limit = data and tonumber(data.limit) or 25
     local offset = data and tonumber(data.offset) or 0
-    local rows = storage.LoadMatchHistory(limit, offset)
+    local okRows, rows = pcall(storage.LoadMatchHistory, limit, offset)
+    if not okRows or type(rows) ~= 'table' then
+        lib.print.warn(('getMatchHistory failed: %s'):format(tostring(rows)))
+        return { rows = {}, nextOffset = math.floor(tonumber(offset) or 0), total = 0 }
+    end
+
+    local okTotal, total = pcall(storage.CountMatchHistory)
+    if not okTotal then
+        lib.print.warn(('CountMatchHistory failed: %s'):format(tostring(total)))
+        total = 0
+    end
+
     local nextOffset = (math.floor(tonumber(offset) or 0) + #rows)
-    local total = storage.CountMatchHistory()
     return { rows = rows, nextOffset = nextOffset, total = total }
 end)
 
@@ -227,7 +237,12 @@ lib.callback.register('kos:server:getMatchHistoryDetail', function(source, data)
         return nil
     end
     local id = data and tonumber(data.id) or 0
-    return storage.LoadMatchHistoryDetail(id)
+    local ok, result = pcall(storage.LoadMatchHistoryDetail, id)
+    if not ok then
+        lib.print.warn(('getMatchHistoryDetail failed for %s: %s'):format(tostring(id), tostring(result)))
+        return nil
+    end
+    return result
 end)
 
 lib.callback.register('kos:server:createMatchFromMenu', function(source, data)
@@ -244,7 +259,7 @@ lib.callback.register('kos:server:getOnlinePlayers', function(source, data)
                 goto continue
             end
             local name = GetPlayerName(sid) or ('Player ' .. tostring(sid))
-            local avatar = Avatar.Get(sid)
+            local avatar = avatarModule.Get(sid)
             if not avatar then
                 local identifier = Bridge.framework.GetPlayerIdentifier(sid)
                 if identifier and identifier ~= '' then

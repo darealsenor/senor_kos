@@ -28,6 +28,8 @@ export function MatchScoreboard({ data, localPlayerId, open }: MatchScoreboardPr
 
   const redPlayers = sortPlayers(data.players.filter((p) => p.team === 'teamA'))
   const bluePlayers = sortPlayers(data.players.filter((p) => p.team === 'teamB'))
+  const redLabel = data.teams.teamA.gang?.label ?? 'Red'
+  const blueLabel = data.teams.teamB.gang?.label ?? 'Blue'
 
   return (
     <div
@@ -48,7 +50,7 @@ export function MatchScoreboard({ data, localPlayerId, open }: MatchScoreboardPr
             <div className="w-1/2">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-red-500">Red</span>
+                  <span className="text-sm font-bold text-red-500">{redLabel}</span>
                   <span className="rounded border border-red-500/30 bg-red-500/10 px-2 py-0.5 text-xs font-semibold text-red-400">
                     {data.series.wins.teamA}
                   </span>
@@ -89,7 +91,7 @@ export function MatchScoreboard({ data, localPlayerId, open }: MatchScoreboardPr
             <div className="w-1/2">
               <div className="mb-2 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-blue-500">Blue</span>
+                  <span className="text-sm font-bold text-blue-500">{blueLabel}</span>
                   <span className="rounded border border-blue-500/30 bg-blue-500/10 px-2 py-0.5 text-xs font-semibold text-blue-400">
                     {data.series.wins.teamB}
                   </span>

@@ -1,4 +1,4 @@
-local matchManager = require 'server.match_manager'
+local matchManager = MatchManager
 
 ---@param sourceId number
 ---@param message string

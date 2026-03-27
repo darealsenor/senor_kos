@@ -6,6 +6,7 @@ import { MatchCreationTab } from '@/components/admin/tabs/MatchCreationTab'
 import { LeaderboardTab } from '@/components/admin/tabs/LeaderboardTab'
 import { MatchHistoryTab } from '@/components/admin/tabs/MatchHistoryTab'
 import { ActiveMatchesTab } from '@/components/admin/tabs/ActiveMatchesTab'
+import { Watermark } from '@/components/Watermark'
 import { useNuiStore } from '@/store/nuiStore'
 import { useLocale } from '@/hooks/useLocale'
 import {
@@ -89,7 +90,8 @@ export function KOSMenu({ open, onOpenChange, isAdmin }: KOSMenuProps) {
         </div>
 
         <div className="border-t border-border bg-muted/20 px-6 py-4">
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="flex items-center justify-between gap-3 sm:justify-between">
+            <Watermark className="justify-start" />
             <Button type="button" variant="secondary" onClick={requestClose}>
               {t('close')}
             </Button>
@@ -99,4 +101,3 @@ export function KOSMenu({ open, onOpenChange, isAdmin }: KOSMenuProps) {
     </Dialog>
   )
 }
-

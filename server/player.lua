@@ -1,7 +1,7 @@
 local KOSPlayer = lib.class('KOSPlayer')
-local storage = require 'server.storage'
-local utils = require 'server.utils'
-local Avatar = require 'server.avatar'
+local storage = Storage
+local utils = KOSUtils
+local avatarModule = Avatar
 
 local respawnAfterTeleportMs = math.max(0, tonumber(ServerConfig.KOS.RespawnDelayAfterTeleportMs) or 2000)
 
@@ -50,7 +50,7 @@ function KOSPlayer:constructor(playerId)
     self:LoadPersistent()
     CreateThread(function()
         Wait(1500)
-        local resolvedAvatar = Avatar.Get(playerId)
+        local resolvedAvatar = avatarModule.Get(playerId)
         if resolvedAvatar and resolvedAvatar ~= '' and resolvedAvatar ~= self.avatar then
             self.avatar = resolvedAvatar
             storage.UpsertPlayerStats(self:ToSavePayload())
@@ -317,4 +317,4 @@ function KOSPlayer:stopSpectate()
     TriggerClientEvent('kos:player:stopSpectate', self.playerId)
 end
 
-return KOSPlayer
+KOSPlayerClass = KOSPlayerClass or KOSPlayer

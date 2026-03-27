@@ -7,6 +7,7 @@ ConfigBridge = {
     },
     gangs = {
         { resource = 'op-crime', folder = 'op_gangs' },
+        { resource = 'rcore_gangs', folder = 'rcore_gangs' },
         { resource = 'qbx_core', folder = 'qbx' },
         { resource = 'qb-core', folder = 'qb' },
         { resource = 'core_gangs', folder = 'core_gangs' },

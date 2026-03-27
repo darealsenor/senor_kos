@@ -224,13 +224,13 @@ stopSpectateKeybind = lib.addKeybind({
     end,
 })
 
-RegisterCommand('spectate', function()
-    if state.isSpectating then
-        stopSpectate()
-        return
-    end
-    startSpectate()
-end, false)
+-- RegisterCommand('spectate', function()
+--     if state.isSpectating then
+--         stopSpectate()
+--         return
+--     end
+--     startSpectate()
+-- end, false)
 
 RegisterNetEvent('kos:player:startSpectate', startSpectate)
 RegisterNetEvent('kos:player:stopSpectate', stopSpectate)

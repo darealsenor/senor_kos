@@ -17,6 +17,13 @@ games {
 
 ui_page 'web/build/index.html'
 
+escrow_ignore {
+  'bridge/**',
+  'config/*.lua',
+  'data/**',
+  'client/locale.lua',
+}
+
 shared_scripts {
   '@ox_lib/init.lua',
   'config/shared_config.lua',
@@ -33,6 +40,7 @@ client_scripts {
   'config/client_config.lua',
   'client/state.lua',
   'client/kill_detection.lua',
+  'client/locale.lua',
   'client/utils.lua',
   'client/avatar.lua',
   'client/nui.lua',
@@ -47,10 +55,10 @@ server_scripts {
   'config/avatar_server_config.lua',
   'server/auto_creation_sql.lua',
   'server/version.lua',
-  'server/avatar.lua',
   'server/storage.lua',
   'server/utils.lua',
   'server/timer.lua',
+  'server/avatar.lua',
   'server/player.lua',
   'server/class.lua',
   'server/match_manager.lua',

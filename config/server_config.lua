@@ -5,8 +5,8 @@ ServerConfig.Timer = {
 }
 
 ServerConfig.KOS = {
-    RoundDurationSeconds = 10 * 60,
-    MatchCleanupDurationSeconds = 45 * 60,
+    RoundDurationSeconds = 3 * 60,
+    MatchCleanupDurationSeconds = 10 * 60,
     RespawnDelayAfterRoundBreakMs = 650,
     RespawnDelayAfterTeleportMs = 2000,
 }

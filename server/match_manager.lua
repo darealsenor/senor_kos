@@ -1,4 +1,4 @@
-local KOS = require 'server.class'
+local KOS = KOSClass
 
 local matchesById = {}
 local playerToMatch = {}
@@ -196,7 +196,7 @@ exports('GetMatchForPlayer', getMatchByPlayer)
 exports('GetMatchById', getMatchById)
 exports('IsPlayerInMatch', isPlayerInMatch)
 
-return {
+MatchManager = MatchManager or {
     CreateMatch = createMatch,
     StopMatch = stopMatch,
     ListMatches = listMatches,

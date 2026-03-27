@@ -1,4 +1,6 @@
 local activeTimers = {}
+KOSTimer = KOSTimer or {}
+
 local function startTimer(duration, callback, timerId)
     activeTimers[timerId] = true
 
@@ -29,8 +31,6 @@ local function stopTimer(timerId)
     activeTimers[timerId] = nil
 end
 
-return {
-    startTimer = startTimer,
-    timerActive = timerActive,
-    stopTimer = stopTimer,
-}
+KOSTimer.startTimer = startTimer
+KOSTimer.timerActive = timerActive
+KOSTimer.stopTimer = stopTimer

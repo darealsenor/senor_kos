@@ -1,4 +1,4 @@
-local Avatar = {}
+Avatar = Avatar or {}
 local cfg = AvatarConfig
 
 local cacheByIdentifier = {}
@@ -168,5 +168,3 @@ function Avatar.Get(playerId)
     end
     return nil
 end
-
-return Avatar

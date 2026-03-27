@@ -1,4 +1,4 @@
-local storage = {}
+Storage = Storage or {}
 
 ---@param gangKey any
 ---@param gangName any
@@ -20,7 +20,7 @@ end
 
 ---@param identifier string
 ---@return table|nil
-function storage.LoadPlayerStats(identifier)
+function Storage.LoadPlayerStats(identifier)
     if not identifier or identifier == '' then
         return nil
     end
@@ -47,7 +47,7 @@ end
 
 ---@param payload table
 ---@return boolean
-function storage.UpsertPlayerStats(payload)
+function Storage.UpsertPlayerStats(payload)
     if not payload or not payload.identifier or payload.identifier == '' then
         return false
     end
@@ -89,7 +89,7 @@ end
 
 ---@param payload table
 ---@return boolean
-function storage.UpsertGangStats(payload)
+function Storage.UpsertGangStats(payload)
     local gangName = payload and payload.gang and payload.gang.name or nil
     if not gangName or gangName == '' then
         return false
@@ -126,20 +126,22 @@ end
 
 ---@param payload table
 ---@return boolean
-function storage.InsertMatchHistory(payload)
+function Storage.InsertMatchHistory(payload)
     if not payload or not payload.matchId or payload.matchId == '' then
         return false
     end
 
     MySQL.insert.await([[
         INSERT INTO kos_history (
-            match_id, winner_team, winner_gang_key, winner_gang_name, duration, participants_json
-        ) VALUES (?, ?, ?, ?, ?, ?)
+            match_id, winner_team, winner_gang_key, winner_gang_name, loser_gang_key, loser_gang_name, duration, participants_json
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     ]], {
         payload.matchId,
         payload.winnerTeam,
         payload.winnerGang and payload.winnerGang.name or nil,
         payload.winnerGang and payload.winnerGang.label or nil,
+        payload.loserGang and payload.loserGang.name or nil,
+        payload.loserGang and payload.loserGang.label or nil,
         payload.duration or 0,
         json.encode(payload.participants or {}),
     })
@@ -149,7 +151,7 @@ end
 
 ---@param limit number|nil
 ---@return table[]
-function storage.LoadTopPlayers(limit)
+function Storage.LoadTopPlayers(limit)
     local n = math.floor(tonumber(limit) or 25)
     if n < 1 then
         n = 1
@@ -185,7 +187,7 @@ end
 
 ---@param limit number|nil
 ---@return table[]
-function storage.LoadTopGangs(limit)
+function Storage.LoadTopGangs(limit)
     local n = math.floor(tonumber(limit) or 25)
     if n < 1 then
         n = 1
@@ -224,7 +226,7 @@ end
 ---@param offset number|nil
 ---@param query string|nil
 ---@return table[]
-function storage.LoadLeaderboardPlayers(limit, offset, query)
+function Storage.LoadLeaderboardPlayers(limit, offset, query)
     local n = math.floor(tonumber(limit) or 25)
     if n < 1 then
         n = 1
@@ -284,7 +286,7 @@ end
 
 ---@param query string|nil
 ---@return number
-function storage.CountLeaderboardPlayers(query)
+function Storage.CountLeaderboardPlayers(query)
     local whereSql = ''
     local whereParams = {}
     local q = query and tostring(query) or ''
@@ -308,7 +310,7 @@ end
 ---@param offset number|nil
 ---@param query string|nil
 ---@return table[]
-function storage.LoadLeaderboardGangs(limit, offset, query)
+function Storage.LoadLeaderboardGangs(limit, offset, query)
     local n = math.floor(tonumber(limit) or 25)
     if n < 1 then
         n = 1
@@ -369,7 +371,7 @@ end
 
 ---@param query string|nil
 ---@return number
-function storage.CountLeaderboardGangs(query)
+function Storage.CountLeaderboardGangs(query)
     local whereSql = ''
     local whereParams = {}
     local q = query and tostring(query) or ''
@@ -392,7 +394,7 @@ end
 ---@param limit number|nil
 ---@param offset number|nil
 ---@return table[]
-function storage.LoadMatchHistory(limit, offset)
+function Storage.LoadMatchHistory(limit, offset)
     local n = math.floor(tonumber(limit) or 25)
     if n < 1 then
         n = 1
@@ -405,7 +407,7 @@ function storage.LoadMatchHistory(limit, offset)
     end
 
     local rows = MySQL.query.await([[
-        SELECT id, match_id, winner_team, winner_gang_key, winner_gang_name, duration, ended_at
+        SELECT id, match_id, winner_team, winner_gang_key, winner_gang_name, loser_gang_key, loser_gang_name, duration, ended_at
         FROM kos_history
         ORDER BY ended_at DESC
         LIMIT ? OFFSET ?
@@ -419,6 +421,7 @@ function storage.LoadMatchHistory(limit, offset)
             matchId = tostring(r.match_id),
             winnerTeam = r.winner_team and tostring(r.winner_team) or nil,
             winnerGang = buildGang(r.winner_gang_key, r.winner_gang_name),
+            loserGang = buildGang(r.loser_gang_key, r.loser_gang_name),
             duration = tonumber(r.duration) or 0,
             endedAt = r.ended_at and tostring(r.ended_at) or '',
         }
@@ -427,21 +430,21 @@ function storage.LoadMatchHistory(limit, offset)
 end
 
 ---@return number
-function storage.CountMatchHistory()
+function Storage.CountMatchHistory()
     local row = MySQL.single.await('SELECT COUNT(*) as cnt FROM kos_history')
     return tonumber(row and row.cnt) or 0
 end
 
 ---@param id number
 ---@return table|nil
-function storage.LoadMatchHistoryDetail(id)
+function Storage.LoadMatchHistoryDetail(id)
     local hid = math.floor(tonumber(id) or 0)
     if hid <= 0 then
         return nil
     end
 
     local r = MySQL.single.await([[
-        SELECT id, match_id, winner_team, winner_gang_key, winner_gang_name, duration, ended_at, participants_json
+        SELECT id, match_id, winner_team, winner_gang_key, winner_gang_name, loser_gang_key, loser_gang_name, duration, ended_at, participants_json
         FROM kos_history
         WHERE id = ?
         LIMIT 1
@@ -464,10 +467,9 @@ function storage.LoadMatchHistoryDetail(id)
         matchId = tostring(r.match_id),
         winnerTeam = r.winner_team and tostring(r.winner_team) or nil,
         winnerGang = buildGang(r.winner_gang_key, r.winner_gang_name),
+        loserGang = buildGang(r.loser_gang_key, r.loser_gang_name),
         duration = tonumber(r.duration) or 0,
         endedAt = r.ended_at and tostring(r.ended_at) or '',
         participants = participants,
     }
 end
-
-return storage

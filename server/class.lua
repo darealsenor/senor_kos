@@ -1,8 +1,8 @@
 local KOS = lib.class('KOS')
-local timer = require 'server.timer'
-local KOSPlayer = require 'server.player'
-local storage = require 'server.storage'
-local utils = require 'server.utils'
+local timer = KOSTimer
+local KOSPlayer = KOSPlayerClass
+local storage = Storage
+local utils = KOSUtils
 
 function KOS:constructor(data)
     self.id = utils.generateNanoId(10)
@@ -130,6 +130,48 @@ function KOS:GetMatchData()
         end
         return (a.name or '') < (b.name or '')
     end)
+
+    local function resolveTeamGang(teamId)
+        local counts = {}
+        local labels = {}
+        local topCount = 0
+        local dominantGang = nil
+        local tie = false
+
+        for i = 1, #rows do
+            local player = rows[i]
+            if player.team == teamId and player.gang and player.gang.name and player.gang.name ~= '' then
+                local gangName = tostring(player.gang.name)
+                local gangLabel = tostring(player.gang.label or player.gang.name)
+                counts[gangName] = (counts[gangName] or 0) + 1
+                labels[gangName] = gangLabel
+                if counts[gangName] > topCount then
+                    topCount = counts[gangName]
+                    dominantGang = gangName
+                    tie = false
+                elseif counts[gangName] == topCount and dominantGang ~= gangName then
+                    tie = true
+                end
+            end
+        end
+
+        if not dominantGang then
+            return nil
+        end
+
+        if tie then
+            return {
+                name = 'mixed',
+                label = 'Mixed',
+            }
+        end
+
+        return {
+            name = dominantGang,
+            label = labels[dominantGang] or dominantGang,
+        }
+    end
+
     return {
         match = {
             id = self.id,
@@ -174,10 +216,12 @@ function KOS:GetMatchData()
             teamA = {
                 matchKills = self.players.teamA.matchKills or 0,
                 players = #self.players.teamA.playerIds,
+                gang = resolveTeamGang('teamA'),
             },
             teamB = {
                 matchKills = self.players.teamB.matchKills or 0,
                 players = #self.players.teamB.playerIds,
+                gang = resolveTeamGang('teamB'),
             },
         },
         players = rows,
@@ -301,6 +345,7 @@ end
 function KOS:PersistMatchResult(matchWinnerTeam)
     local winnerTeam = matchWinnerTeam or self:GetWinnerTeam()
     local winnerGang = nil
+    local loserGang = nil
     local teamGangCounts = {
         teamA = {},
         teamB = {},
@@ -375,10 +420,38 @@ function KOS:PersistMatchResult(matchWinnerTeam)
         })
     end
 
+    local loserTeam = self:GetOpposingTeam(winnerTeam)
+    local losingGangName = nil
+    if loserTeam == 'teamA' or loserTeam == 'teamB' then
+        local counts = teamGangCounts[loserTeam]
+        local topCount = 0
+        local tie = false
+        for gangName, count in pairs(counts) do
+            if count > topCount then
+                topCount = count
+                losingGangName = gangName
+                tie = false
+            elseif count == topCount then
+                tie = true
+            end
+        end
+        if tie then
+            losingGangName = nil
+        end
+    end
+
+    if losingGangName and gangInfoByName[losingGangName] then
+        loserGang = {
+            name = gangInfoByName[losingGangName].name,
+            label = gangInfoByName[losingGangName].label,
+        }
+    end
+
     storage.InsertMatchHistory({
         matchId = self.id,
         winnerTeam = winnerTeam,
         winnerGang = winnerGang,
+        loserGang = loserGang,
         duration = duration,
         participants = participants,
     })
@@ -792,4 +865,4 @@ function KOS:SetSeriesWins(winsA, winsB)
     self:BroadcastMatchData()
 end
 
-return KOS
+KOSClass = KOSClass or KOS

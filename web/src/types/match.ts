@@ -43,8 +43,8 @@ export interface KosMatchPayload {
     winner?: string | null
   }
   teams: {
-    teamA: { matchKills: number; players: number }
-    teamB: { matchKills: number; players: number }
+    teamA: { matchKills: number; players: number; gang?: { name?: string; label?: string } | null }
+    teamB: { matchKills: number; players: number; gang?: { name?: string; label?: string } | null }
   }
   players: MatchPlayerRow[]
 }

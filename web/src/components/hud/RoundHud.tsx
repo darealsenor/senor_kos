@@ -72,8 +72,8 @@ export function RoundHud({ data, localPlayerId, className }: RoundHudProps) {
   const leftPortraitColor = leftTeam === 'teamA' ? 'red' : 'blue'
   const rightPortraitColor = rightTeam === 'teamA' ? 'red' : 'blue'
 
-  const leftLabel = leftTeam === 'teamA' ? 'Team A' : 'Team B'
-  const rightLabel = rightTeam === 'teamA' ? 'Team A' : 'Team B'
+  const leftLabel = (leftTeam === 'teamA' ? data.teams.teamA.gang?.label : data.teams.teamB.gang?.label) ?? (leftTeam === 'teamA' ? 'Team A' : 'Team B')
+  const rightLabel = (rightTeam === 'teamA' ? data.teams.teamA.gang?.label : data.teams.teamB.gang?.label) ?? (rightTeam === 'teamA' ? 'Team A' : 'Team B')
 
   const leftWins = series.wins[leftTeam]
   const rightWins = series.wins[rightTeam]

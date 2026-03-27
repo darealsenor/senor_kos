@@ -1,15 +1,8 @@
 local adminOpen = false
 
----@return table<string, string>
-local function getLocaleData()
-    local path = ('locales.%s'):format(lib.getLocaleKey() or 'en')
-    local locales = lib.loadJson(path)
-    return locales
-end
-
 ---@return nil
 local function sendLocaleData()
-    SendReactMessage('setLocale', getLocaleData())
+    SendReactMessage('setLocale', Locale.GetData())
 end
 
 --- Shows or hides the NUI document and clears focus when the admin panel is closed.
@@ -78,7 +71,7 @@ RegisterNUICallback('kos:getUiConfig', function(_, cb)
 end)
 
 RegisterNUICallback('kos:getUiLocale', function(_, cb)
-    cb(getLocaleData())
+    cb(Locale.GetData())
 end)
 
 ---@param data table

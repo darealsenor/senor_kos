@@ -4,7 +4,7 @@ Shared = Shared or {}
 lib.locale()
 
 
-Config.versionCheck = false
+Config.versionCheck = true
 
 Config.Admin = {
     qb = { permissions = { 'qbcore.god', 'admin' } },
@@ -16,5 +16,5 @@ Config.Admin = {
 
 Shared.Spectate = {
     competitive = true,
-    players = true,
+    players = true, -- players can spectate via /kos or interaction command
 }

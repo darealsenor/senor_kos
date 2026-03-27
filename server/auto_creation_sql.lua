@@ -42,6 +42,8 @@ local function initDB()
             `winner_team` VARCHAR(32) DEFAULT NULL,
             `winner_gang_key` VARCHAR(64) DEFAULT NULL,
             `winner_gang_name` VARCHAR(64) DEFAULT NULL,
+            `loser_gang_key` VARCHAR(64) DEFAULT NULL,
+            `loser_gang_name` VARCHAR(64) DEFAULT NULL,
             `duration` INT UNSIGNED NOT NULL DEFAULT 0,
             `participants_json` LONGTEXT NOT NULL,
             `ended_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -50,6 +52,7 @@ local function initDB()
             INDEX `idx_kos_history_winner_gang_key` (`winner_gang_key`)
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
     ]])
+
 end
 
 local function upsertGangs()
