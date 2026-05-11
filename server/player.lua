@@ -4,6 +4,17 @@ local utils = KOSUtils
 local avatarModule = Avatar
 
 local respawnAfterTeleportMs = math.max(0, tonumber(ServerConfig.KOS.RespawnDelayAfterTeleportMs) or 2000)
+local anticheatBypassMs = math.max(0, tonumber(ServerConfig.AntiCheat and ServerConfig.AntiCheat.BypassWindowMs) or 3000)
+
+---@param playerId number
+---@param kind string 'revive' | 'spectate'
+---@param enabled boolean
+local function setAnticheatBypass(playerId, kind, enabled)
+    if not playerId or playerId <= 0 then return end
+    if Bridge and Bridge.anticheat and Bridge.anticheat.SetBypass then
+        Bridge.anticheat.SetBypass(playerId, kind, enabled)
+    end
+end
 
 ---@param playerId number
 ---@return string|nil
@@ -26,6 +37,7 @@ function KOSPlayer:constructor(playerId)
     self.avatar = nil
     self.team = nil
     self.oldCoords = nil
+    self.oldBucket = nil
     self.alive = true
     self.gang = Bridge.gangs.GetPlayerGang(playerId)
     self.memory = {
@@ -57,6 +69,34 @@ function KOSPlayer:constructor(playerId)
         end
     end)
     self.spectating = false
+end
+
+---@return nil
+function KOSPlayer:CaptureOldBucket()
+    local playerId = self.playerId
+    if not playerId then
+        return
+    end
+
+    self.oldBucket = GetPlayerRoutingBucket(playerId) or 0
+end
+
+---@param bucket number|nil
+---@param playerId number|nil
+---@return nil
+function KOSPlayer:SetBucket(bucket, playerId)
+    local id = playerId or self.playerId
+    if not id then
+        return
+    end
+
+    Bridge.framework.SetPlayerBucket(id, bucket or 0)
+end
+
+---@param playerId number|nil
+---@return nil
+function KOSPlayer:RestoreOldBucket(playerId)
+    self:SetBucket(self.oldBucket or 0, playerId)
 end
 
 ---@return nil
@@ -191,13 +231,27 @@ end
 
 ---@param playerId number|nil
 ---@return nil
+---@param playerId number|nil
+---@return nil
 function KOSPlayer:Revive(playerId)
     local id = playerId or self.playerId
     if not id then
         lib.print.debug('revive: no player id, ignoring')
         return
     end
+    lib.print.debug(('reviving player %s'):format(tostring(id)))
+    self:MarkAlive()
+    setAnticheatBypass(id, 'revive', true)
     Bridge.hospital.Revive(id)
+    SetTimeout(anticheatBypassMs, function()
+        setAnticheatBypass(id, 'revive', false)
+    end)
+
+    -- If we are in the middle of a match, we should sync this state change
+    local match = MatchManager and MatchManager.GetMatchForPlayer and MatchManager.GetMatchForPlayer(id)
+    if match then
+        match:BroadcastMatchData()
+    end
 end
 
 ---@return nil
@@ -242,20 +296,28 @@ end
 
 ---@param vec vector4|table|nil
 ---@param playerId number|nil
+---@param callback function|nil
 ---@return nil
-function KOSPlayer:Respawn(vec, playerId)
+function KOSPlayer:Respawn(vec, playerId, callback)
     local id = playerId or self.playerId
     if not id then
         lib.print.debug('respawn: no player id, ignoring')
         return
     end
+
+    -- For match-style respawns, we want to be as fast as possible
     CreateThread(function()
         self:MarkAlive()
         self:Teleport(vec, id)
-        if respawnAfterTeleportMs > 0 then
-            Wait(respawnAfterTeleportMs)
-        end
+
+        -- We wait a tiny bit for the world to load before reviving
+        Wait(500)
+
         self:Revive(id)
+
+        if type(callback) == 'function' then
+            callback(id)
+        end
     end)
 end
 
@@ -301,20 +363,22 @@ function KOSPlayer:TeleportToMapSpawn(map)
 end
 
 function KOSPlayer:remove()
-    self.playerId = nil
     if self.spectating then
         self:stopSpectate()
     end
+    self.playerId = nil
 end
 
 function KOSPlayer:startSpectate()
     self.spectating = true
+    setAnticheatBypass(self.playerId, 'spectate', true)
     TriggerClientEvent('kos:player:startSpectate', self.playerId)
 end
 
 function KOSPlayer:stopSpectate()
     self.spectating = false
     TriggerClientEvent('kos:player:stopSpectate', self.playerId)
+    setAnticheatBypass(self.playerId, 'spectate', false)
 end
 
 KOSPlayerClass = KOSPlayerClass or KOSPlayer

@@ -83,6 +83,8 @@
   "mode_time_limit": "Time limit",
   "mode_competitive": "Competitive",
   "map": "Map",
+  "loadout": "Loadout",
+  "none": "None",
   "default": "Default",
   "kills_to_win_round": "Kills to win round",
   "round_seconds": "Round seconds",
@@ -101,5 +103,15 @@
   "created_match_label": "Created: %s",
   "failed": "Failed",
   "open_menu_target": "Open KOS menu",
-  "open_menu_keystroke": "[E] Open KOS menu"
+  "open_menu_keystroke": "[E] Open KOS menu",
+  "spectate_label": "Spectating",
+  "spectate_scope_team": "Teammate",
+  "spectate_scope_match": "Match",
+  "spectate_prev": "Previous",
+  "spectate_next": "Next",
+  "spectate_stop": "Exit",
+  "spectate_alive_remaining": "Alive",
+  "spectate_keybind_prev": "Spectate previous target",
+  "spectate_keybind_next": "Spectate next target",
+  "spectate_keybind_stop": "Stop spectating"
 }

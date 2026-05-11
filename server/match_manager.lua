@@ -126,7 +126,11 @@ AddEventHandler('kos:server:matchExpired', function(matchId)
     if not matchId or matchesById[matchId] == nil then
         return
     end
-    stopMatch(matchId)
+    -- We wait a bit before hard-deleting the match to let players see the final Victory UI
+    CreateThread(function()
+        Wait(8000)
+        stopMatch(matchId)
+    end)
 end)
 
 RegisterNetEvent('kos:playerDied', function(data)

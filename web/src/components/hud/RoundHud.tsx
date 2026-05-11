@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, Fragment } from 'react'
 import { cn } from '@/lib/utils'
 import type { KosMatchPayload } from '@/types/match'
 import { PlayerPortrait } from '@/components/hud/PlayerPortrait'
@@ -69,11 +69,11 @@ export function RoundHud({ data, localPlayerId, className }: RoundHudProps) {
   const leftRoster = rosterForTeam(data.players, leftTeam)
   const rightRoster = rosterForTeam(data.players, rightTeam)
 
-  const leftPortraitColor = leftTeam === 'teamA' ? 'red' : 'blue'
-  const rightPortraitColor = rightTeam === 'teamA' ? 'red' : 'blue'
+  const leftTeamColor = leftTeam === 'teamA' ? 'red' : 'green'
+  const rightTeamColor = rightTeam === 'teamA' ? 'red' : 'green'
 
-  const leftLabel = (leftTeam === 'teamA' ? data.teams.teamA.gang?.label : data.teams.teamB.gang?.label) ?? (leftTeam === 'teamA' ? 'Team A' : 'Team B')
-  const rightLabel = (rightTeam === 'teamA' ? data.teams.teamA.gang?.label : data.teams.teamB.gang?.label) ?? (rightTeam === 'teamA' ? 'Team A' : 'Team B')
+  const leftTheme = leftTeam === 'teamA' ? { bg: 'rgba(255,58,58,0.4)', solid: '#ff3a3a' } : { bg: 'rgba(58,155,71,0.4)', solid: '#3a9b47' }
+  const rightTheme = rightTeam === 'teamA' ? { bg: 'rgba(255,58,58,0.4)', solid: '#ff3a3a' } : { bg: 'rgba(58,155,71,0.4)', solid: '#3a9b47' }
 
   const leftWins = series.wins[leftTeam]
   const rightWins = series.wins[rightTeam]
@@ -81,120 +81,109 @@ export function RoundHud({ data, localPlayerId, className }: RoundHudProps) {
   return (
     <div
       className={cn(
-        'pointer-events-none fixed left-1/2 top-1.5 z-hud flex -translate-x-1/2 flex-col items-center gap-0.5',
+        'pointer-events-none fixed left-1/2 top-4 z-hud flex -translate-x-1/2 justify-center',
         className
       )}
     >
-      <div
-        className="flex items-stretch overflow-hidden rounded-sm border border-white/10 shadow-sm"
-        style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.90)' }}
-      >
-        <div
-          className={cn(
-            'flex min-w-[108px] flex-col items-center justify-center gap-0.5 border-r border-white/10 px-2 py-1.5',
-            leftPortraitColor === 'red' ? 'bg-red-500/[0.08]' : 'bg-blue-500/[0.08]'
-          )}
+      <div className="relative flex items-center justify-center gap-[30px]">
+          
+        {/* Left Team Pane */}
+        <div 
+           className="relative flex h-[58px] items-center justify-end gap-[13px] rounded-[10px] px-3.5"
+           style={{ background: `linear-gradient(90deg, rgba(14,14,17,0.7) 0%, ${leftTheme.bg} 100%)` }}
         >
-          <div className="flex w-full items-center justify-between gap-1">
-            <span
-              className={cn(
-                'text-[8px] font-bold uppercase tracking-wide',
-                leftPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'
-              )}
-            >
-              {leftLabel}
-            </span>
-            <span
-              className={cn(
-                'text-[10px] font-bold tabular-nums',
-                leftPortraitColor === 'red' ? 'text-red-200' : 'text-blue-200'
-              )}
-            >
-              {leftWins}
-            </span>
-          </div>
-          <div className="flex w-full flex-wrap items-center justify-center gap-0.5">
-            {leftRoster.map((p) => (
-              <PlayerPortrait
-                key={p.id}
-                image={p.avatar}
-                dead={!p.alive}
-                team={leftPortraitColor}
-                size={20}
-                scheme="team"
-                showTeamLine={false}
-              />
-            ))}
-          </div>
-          <span className="text-[8px] font-medium text-zinc-400">{aliveLeft} alive</span>
+           {leftRoster.map((p, i) => (
+             <Fragment key={p.id}>
+               <PlayerPortrait
+                 image={p.avatar}
+                 dead={!p.alive}
+                 team={leftTeamColor}
+                 size={40}
+                 scheme="team"
+                 showTeamLine={false}
+                 className="!border-none"
+               />
+               {i < leftRoster.length - 1 && <div className="h-[28px] w-px bg-white/10" />}
+             </Fragment>
+           ))}
         </div>
 
-        <div
-          className="flex min-w-[124px] flex-col items-center justify-center gap-0 px-2 py-1.5"
-          style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.82)' }}
-        >
-          <span className="text-[8px] font-semibold uppercase tracking-wide text-zinc-500">
-            Round {series.index}/{series.total}
-          </span>
-          <span className="font-display text-xl font-black tabular-nums leading-tight tracking-tight text-amber-100">
-            {displaySeconds !== null ? formatClock(displaySeconds) : '—'}
-          </span>
-          <span className="text-[8px] font-medium text-zinc-400">
-            Score{' '}
-            <span className={leftPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'}>{leftWins}</span>
-            <span className="mx-0.5 text-zinc-600">:</span>
-            <span className={rightPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'}>{rightWins}</span>
-          </span>
+        {/* Center Cluster */}
+        <div className="relative flex items-center justify-center gap-[18px]">
+           {/* Radial Gradient Glow for Center (offset perfectly matching Figma y: -107 for sweeping dome) */}
+           <div className="absolute left-1/2 top-[-107px] -translate-x-1/2 h-[184px] w-[240px] opacity-90 pointer-events-none -z-10" 
+                style={{ background: 'radial-gradient(50% 50% at 50% 50%, #0E0E11 0%, rgba(14,14,17,0) 100%)' }} />
+
+           {/* Left Wins */}
+           <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[10px] z-10" 
+                style={{ 
+                  backgroundColor: leftTheme.solid,
+                  boxShadow: `inset 0 0 21px rgba(0,0,0,0.25), 0 4px 16px ${leftTheme.solid}40` 
+                }}>
+             <span className="text-[20px] font-bold text-[#2c2c2c] leading-none mt-0.5">{leftWins}</span>
+           </div>
+
+           {/* Timer Info */}
+           <div className="flex flex-col items-center justify-center pt-1 w-[88px] text-center z-10 gap-0">
+              <div className="text-[12px] font-extrabold text-white/50 uppercase leading-none tracking-widest">ROUND</div>
+              
+              <div className="font-display text-[26px] font-bold leading-none tracking-wide mt-1 tabular-nums drop-shadow-md flex items-center justify-center">
+                {displaySeconds !== null ? (() => {
+                  const mm = Math.floor(displaySeconds / 60).toString().padStart(2, '0');
+                  const ss = (displaySeconds % 60).toString().padStart(2, '0');
+                  
+                  return (
+                    <>
+                      {mm[0] === '0' ? (
+                        <span className="text-white/30">{mm[0]}</span>
+                      ) : (
+                        <span className="text-white">{mm[0]}</span>
+                      )}
+                      <span className="text-white">{mm[1]}</span>
+                      <span className="text-white/40 px-0.5 -mt-0.5">:</span>
+                      <span className="text-white">{ss}</span>
+                    </>
+                  );
+                })() : <span className="text-white">—</span>}
+              </div>
+
+              <div className="text-[14px] font-bold text-white/60 leading-none mt-1 whitespace-nowrap">
+                {series.index} <span className="text-white/20 px-1.5">|</span> {series.total}
+              </div>
+           </div>
+
+           {/* Right Wins */}
+           <div className="flex h-[40px] w-[40px] items-center justify-center rounded-[10px] z-10" 
+                style={{ 
+                  backgroundColor: rightTheme.solid,
+                  boxShadow: `inset 0 0 21px rgba(0,0,0,0.25), 0 4px 16px ${rightTheme.solid}40`
+                }}>
+             <span className="text-[20px] font-bold text-[#2c2c2c] leading-none mt-0.5">{rightWins}</span>
+           </div>
         </div>
 
-        <div
-          className={cn(
-            'flex min-w-[108px] flex-col items-center justify-center gap-0.5 border-l border-white/10 px-2 py-1.5',
-            rightPortraitColor === 'red' ? 'bg-red-500/[0.08]' : 'bg-blue-500/[0.08]'
-          )}
+        {/* Right Team Pane */}
+        <div 
+           className="relative flex h-[58px] items-center justify-start gap-[13px] rounded-[10px] px-3.5"
+           style={{ background: `linear-gradient(90deg, ${rightTheme.bg} 0%, rgba(14,14,17,0.7) 100%)` }}
         >
-          <div className="flex w-full items-center justify-between gap-1">
-            <span
-              className={cn(
-                'text-[8px] font-bold uppercase tracking-wide',
-                rightPortraitColor === 'red' ? 'text-red-300/90' : 'text-blue-300/90'
-              )}
-            >
-              {rightLabel}
-            </span>
-            <span
-              className={cn(
-                'text-[10px] font-bold tabular-nums',
-                rightPortraitColor === 'red' ? 'text-red-200' : 'text-blue-200'
-              )}
-            >
-              {rightWins}
-            </span>
-          </div>
-          <div className="flex w-full flex-wrap items-center justify-center gap-0.5">
-            {rightRoster.map((p) => (
-              <PlayerPortrait
-                key={p.id}
-                image={p.avatar}
-                dead={!p.alive}
-                team={rightPortraitColor}
-                size={20}
-                scheme="team"
-                showTeamLine={false}
-              />
-            ))}
-          </div>
-          <span className="text-[8px] font-medium text-zinc-400">{aliveRight} alive</span>
+           {rightRoster.map((p, i) => (
+             <Fragment key={p.id}>
+               <PlayerPortrait
+                 image={p.avatar}
+                 dead={!p.alive}
+                 team={rightTeamColor}
+                 size={40}
+                 scheme="team"
+                 showTeamLine={false}
+                 className="!border-none"
+               />
+               {i < rightRoster.length - 1 && <div className="h-[28px] w-px bg-white/10" />}
+             </Fragment>
+           ))}
         </div>
+
       </div>
-      {data.map?.name && (
-        <span
-          className="rounded-sm border border-white/10 px-1.5 py-px text-[8px] font-medium text-zinc-400"
-          style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.90)' }}
-        >
-          {data.map.name}
-        </span>
-      )}
     </div>
   )
 }

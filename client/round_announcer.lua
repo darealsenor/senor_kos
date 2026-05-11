@@ -12,12 +12,12 @@ end
 
 local function resolveWinnerMessage(winnerTeam)
     if winnerTeam == 'teamA' then
-        return '~g~Team A~s~ wins'
+        return 'TEAM A WINS'
     end
     if winnerTeam == 'teamB' then
-        return '~b~Team B~s~ wins'
+        return 'TEAM B WINS'
     end
-    return 'Round draw'
+    return 'ROUND DRAW'
 end
 
 local function isPayloadMatch(payload)
@@ -40,94 +40,31 @@ RegisterNetEvent(Events.CLIENT_ROUND_START, function(payload)
     local token = announceSeq
 
     local seconds = math.max(1, tonumber(payload.countdownSeconds) or 3)
+    local freezeDuration = math.max(seconds * 1000, tonumber(payload.freezeMs) or 0)
+
+    SendNUIMessage({
+        action = 'setAnnouncer',
+        data = {
+            visible = true,
+            type = 'start',
+            title = 'ROUND STARTING',
+            subtitle = 'PREPARE FIRING',
+            seconds = seconds,
+            colorTheme = 'neutral'
+        }
+    })
 
     CreateThread(function()
         if token ~= announceSeq then
             return
         end
 
-        local banner = lib.scaleform:new({
-            name = 'MP_BIG_MESSAGE_FREEMODE',
-            fullScreen = true,
-        })
-        banner:callMethod('SHOW_SHARD_CENTERED_MP_MESSAGE', {})
-        banner:callMethod('SHARD_SET_TEXT', { 'Round starting', ('Starting in %ds'):format(seconds), 0 })
-
-        local countdown = nil
-        if seconds > 0 then
-            countdown = lib.scaleform:new({
-                name = 'COUNTDOWN',
-                fullScreen = true,
-            })
-            countdown:callMethod('SET_MESSAGE', { seconds, 0, 200, 255, true })
-            countdown:callMethod('FADE_MP', { seconds, 0, 200, 255 })
-        end
-
-        local showBannerActive = true
-        local showCountdownActive = seconds > 0
-        local startDraw = GetGameTimer()
-
-        CreateThread(function()
-            while showBannerActive do
-                if token ~= announceSeq then
-                    showBannerActive = false
-                    showCountdownActive = false
-                    return
-                end
-                Wait(1)
-                banner:draw()
-            end
-        end)
-
-        if countdown then
-            CreateThread(function()
-                while showCountdownActive do
-                    if token ~= announceSeq then
-                        showCountdownActive = false
-                        return
-                    end
-                    Wait(1)
-                    countdown:draw()
-                end
-            end)
-
-            local t = seconds
-            while t > 1 do
-                Wait(1000)
-                if token ~= announceSeq then
-                    showCountdownActive = false
-                    showBannerActive = false
-                    break
-                end
-                t = t - 1
-                countdown:callMethod('SET_MESSAGE', { t, 0, 200, 255, true })
-                countdown:callMethod('FADE_MP', { t, 0, 200, 255 })
-            end
-
-            Wait(1000)
-            showCountdownActive = false
-        end
-
-        local elapsed = GetGameTimer() - startDraw
-        local targetBannerMs = seconds > 0 and (seconds * 1000) or 2000
-        if elapsed < targetBannerMs then
-            Wait(targetBannerMs - elapsed)
-        end
-        showBannerActive = false
-        banner:dispose()
-        if countdown then
-            countdown:dispose()
-        end
-    end)
-
-    CreateThread(function()
-        if token ~= announceSeq then
+        if freezeDuration <= 0 then
             return
         end
 
-        Wait(1000)
         FreezeEntityPosition(cache.ped, true)
-        Wait(2000)
+        Wait(freezeDuration)
         FreezeEntityPosition(cache.ped, false)
     end)
 
@@ -137,7 +74,7 @@ RegisterNetEvent(Events.CLIENT_ROUND_START, function(payload)
         end
 
         CreateThread(disableShooting)
-        Wait(3000)
+        Wait(freezeDuration)
         disableShootingThread = false
     end)
 end)
@@ -148,93 +85,57 @@ RegisterNetEvent(Events.CLIENT_ROUND_END, function(payload)
     end
 
     announceSeq = announceSeq + 1
-    local token = announceSeq
 
     local winnerMsg = resolveWinnerMessage(payload.winnerTeam)
     local hasNextRound = payload.nextRound ~= false
-    local subtitle = hasNextRound and 'Next round in' or 'Match over'
+    local subtitle = hasNextRound and 'NEXT ROUND IN' or 'MATCH OVER'
     local seconds = hasNextRound and 3 or 0
 
-    CreateThread(function()
-        if token ~= announceSeq then
-            return
-        end
+    local colorTheme = 'neutral'
+    if payload.winnerTeam == 'teamA' then
+        colorTheme = 'teamA'
+    elseif payload.winnerTeam == 'teamB' then
+        colorTheme = 'teamB'
+    end
 
-        local banner = lib.scaleform:new({
-            name = 'MP_BIG_MESSAGE_FREEMODE',
-            fullScreen = true,
-        })
-        banner:callMethod('SHOW_SHARD_CENTERED_MP_MESSAGE', {})
-        banner:callMethod('SHARD_SET_TEXT', { winnerMsg, subtitle, 0 })
-
-        local countdown = nil
-        if seconds > 0 then
-            countdown = lib.scaleform:new({
-                name = 'COUNTDOWN',
-                fullScreen = true,
-            })
-            countdown:callMethod('SET_MESSAGE', { seconds, 0, 200, 255, true })
-            countdown:callMethod('FADE_MP', { seconds, 0, 200, 255 })
-        end
-
-        local showBannerActive = true
-        local showCountdownActive = seconds > 0
-
-
-        CreateThread(function()
-            while showBannerActive do
-                if token ~= announceSeq then
-                    showBannerActive = false
-                    showCountdownActive = false
-                    return
-                end
-                Wait(1)
-                banner:draw()
-            end
-        end)
-
-        if countdown and seconds > 0 then
-            CreateThread(function()
-                while showCountdownActive do
-                    if token ~= announceSeq then
-                        showCountdownActive = false
-                        return
-                    end
-                    Wait(1)
-                    countdown:draw()
-                end
-            end)
-
-            CreateThread(function()
-                local t = seconds
-                while t > 1 do
-                    Wait(1000)
-                    if token ~= announceSeq then
-                        showCountdownActive = false
-                        return
-                    end
-                    t = t - 1
-                    countdown:callMethod('SET_MESSAGE', { t, 0, 200, 255, true })
-                    countdown:callMethod('FADE_MP', { t, 0, 200, 255 })
-                end
-
-                Wait(1000)
-                showCountdownActive = false
-            end)
-        end
-
-        local bannerWaitMs = 2000
-        Wait(bannerWaitMs)
-        showBannerActive = false
-
-        if seconds > 0 then
-            Wait(seconds * 1000)
-        end
-
-        banner:dispose()
-        if countdown then
-            countdown:dispose()
-        end
-    end)
+    SendNUIMessage({
+        action = 'setAnnouncer',
+        data = {
+            visible = true,
+            type = 'end',
+            title = winnerMsg,
+            subtitle = subtitle,
+            seconds = seconds,
+            colorTheme = colorTheme
+        }
+    })
 end)
 
+RegisterNetEvent(Events.CLIENT_MATCH_END, function(payload)
+    if not isPayloadMatch(payload) then
+        return
+    end
+
+    announceSeq = announceSeq + 1
+
+    local winnerMsg = resolveWinnerMessage(payload.winnerTeam) .. ' - MATCH WINNER'
+    
+    local colorTheme = 'neutral'
+    if payload.winnerTeam == 'teamA' then
+        colorTheme = 'teamA'
+    elseif payload.winnerTeam == 'teamB' then
+        colorTheme = 'teamB'
+    end
+
+    SendNUIMessage({
+        action = 'setAnnouncer',
+        data = {
+            visible = true,
+            type = 'end',
+            title = winnerMsg,
+            subtitle = 'VICTORY REACHED',
+            seconds = 5,
+            colorTheme = colorTheme
+        }
+    })
+end)

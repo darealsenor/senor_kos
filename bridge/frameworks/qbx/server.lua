@@ -43,19 +43,34 @@ function framework.GetPlayerName(playerId)
     return GetPlayerName(playerId) or ''
 end
 
----@param playerId number
----@return string|nil
-function framework.GetGangName(playerId)
-    local player = QBX:GetPlayer(playerId)
-    if not player then
-        return nil
+---@return number[]
+function framework.GetPlayers()
+    local output = {}
+    local players = exports.qbx_core:GetQBPlayers() or {}
+    for playerId, _player in pairs(players) do
+        local id = tonumber(playerId)
+        if id and id > 0 then
+            output[#output + 1] = id
+        end
     end
-    local gang = player.PlayerData and player.PlayerData.gang
-    if not gang then
-        return nil
-    end
-    return gang.name or gang.label
+    return output
 end
+
+---@param playerId number
+---@param bucket number|nil
+---@return boolean
+function framework.SetPlayerBucket(playerId, bucket)
+    return exports.qbx_core:SetPlayerBucket(playerId, bucket or 0)
+end
+
+RegisterNetEvent('QBCore:Server:OnPlayerLoaded', function()
+    TriggerEvent(Events.SERVER_PLAYER_LOADED, source)
+end)
+
+AddEventHandler('QBCore:Server:PlayerLoaded', function(player)
+    local playerId = player and player.PlayerData and player.PlayerData.source or source
+    TriggerEvent(Events.SERVER_PLAYER_LOADED, playerId)
+end)
 
 AddEventHandler('qbx_core:server:playerLoggedOut', function(playerId)
     TriggerEvent(Events.SERVER_PLAYER_DROPPED, tonumber(playerId) or source)

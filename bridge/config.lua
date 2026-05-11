@@ -18,11 +18,19 @@ ConfigBridge = {
         { resource = 'qb-core', folder = 'qb' },
         { resource = 'es_extended', folder = 'esx' },
     },
+    inventories = {
+        { resource = 'ox_inventory', folder = 'ox' },
+        { resource = 'qb-inventory', folder = 'qb' },
+    },
     hospital = {
         { resource = 'qbx_medical', folder = 'qbx_medical' },
         { resource = 'qb-ambulancejob', folder = 'qb_ambulancejob' },
         { resource = 'esx_ambulancejob', folder = 'esx_ambulancejob' },
         { resource = 'wasabi_ambulance', folder = 'wasabi_ambulance' },
+        { resource = 'wasabi_ambulance_v2', folder = 'wasabi_ambulance_v2' },
+        { resource = 'ak47_qb_ambulancejob', folder = 'ak47_ambulancejob' },
+        { resource = 'ars_ambulancejob', folder = 'arius_ambulancejob' },
+        { resource = 'p_ambulancejob', folder = 'p_ambulancejob' },
     },
     targets = {
         { resource = "ox_target", folder = "ox" },

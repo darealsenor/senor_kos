@@ -37,10 +37,23 @@ const MOCK_ONLINE_PLAYERS: OnlinePlayerRow[] = (() => {
     'Sable',
     'Talon',
   ]
+  const gangs = [
+    { name: 'vagos', label: 'Vagos' },
+    { name: 'ballas', label: 'Ballas' },
+    { name: 'families', label: 'Families' },
+    { name: 'marabunta', label: 'Marabunta' },
+    { name: 'triads', label: 'Triads' },
+    { name: 'aztecas', label: 'Aztecas' },
+    { name: 'lostmc', label: 'Lost MC' },
+    { name: 'cartel', label: 'Cartel' },
+    { name: 'mafia', label: 'Mafia' },
+    { name: 'bloods', label: 'Bloods' },
+  ]
   return Array.from({ length: 40 }, (_, idx) => ({
     id: 100 + idx,
-    name: names[idx % names.length],
+    name: `${names[idx % names.length]} ${idx + 1}`,
     avatar: idx % 3 === 0 ? `https://cdn.discordapp.com/embed/avatars/${idx % 5}.png` : null,
+    gang: gangs[idx % gangs.length],
   }))
 })()
 
@@ -209,23 +222,62 @@ export const getMockMatchHistoryDetail = (id: number): MatchHistoryDetail => {
 }
 
 export const getMockActiveMatches = (): GetActiveMatchesResponse => {
-  const matches: ActiveMatchRow[] = [
-    {
-      id: 'mock_a1',
-      state: 'in_progress',
-      mode: 'competitive',
-      mapName: 'Legion Square',
-      roundIndex: 2,
-      roundTotal: 5,
-      score: { teamA: 1, teamB: 0 },
-      players: [
-        { id: 101, name: 'Alpha', avatar: 'https://cdn.discordapp.com/embed/avatars/0.png', team: 'teamA', alive: true, kills: 3, deaths: 1 },
-        { id: 102, name: 'Bravo', avatar: 'https://cdn.discordapp.com/embed/avatars/1.png', team: 'teamA', alive: false, kills: 1, deaths: 2 },
-        { id: 201, name: 'Delta', avatar: 'https://cdn.discordapp.com/embed/avatars/2.png', team: 'teamB', alive: true, kills: 2, deaths: 2 },
-        { id: 202, name: 'Echo', avatar: 'https://cdn.discordapp.com/embed/avatars/3.png', team: 'teamB', alive: true, kills: 1, deaths: 1 },
-      ],
-    },
+  const mapNames = [
+    'Legion Square',
+    'Mirror Park',
+    'Vespucci',
+    'Grove Street',
+    'Docks',
+    'Sandy Airfield',
+    'Paleto Bay',
+    'Textile City',
   ]
+  const states = ['in_progress', 'warmup', 'overtime']
+  const modes = ['competitive', 'time_limit', 'kill_limit'] as const
+
+  const matches: ActiveMatchRow[] = Array.from({ length: 30 }, (_, idx) => {
+    const roundTotal = 5 + (idx % 3)
+    const roundIndex = 1 + (idx % roundTotal)
+    const teamAPlayers = [
+      MOCK_ONLINE_PLAYERS[(idx * 2) % MOCK_ONLINE_PLAYERS.length],
+      MOCK_ONLINE_PLAYERS[(idx * 2 + 1) % MOCK_ONLINE_PLAYERS.length],
+    ]
+    const teamBPlayers = [
+      MOCK_ONLINE_PLAYERS[(idx * 2 + 2) % MOCK_ONLINE_PLAYERS.length],
+      MOCK_ONLINE_PLAYERS[(idx * 2 + 3) % MOCK_ONLINE_PLAYERS.length],
+    ]
+
+    return {
+      id: `mock_a${idx + 1}`,
+      state: states[idx % states.length],
+      mode: modes[idx % modes.length],
+      mapName: mapNames[idx % mapNames.length],
+      roundIndex,
+      roundTotal,
+      score: { teamA: idx % 5, teamB: (idx + 2) % 5 },
+      players: [
+        ...teamAPlayers.map((p, pIdx) => ({
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          team: 'teamA' as const,
+          alive: (idx + pIdx) % 2 === 0,
+          kills: (idx + pIdx + 1) % 7,
+          deaths: (idx + pIdx + 2) % 6,
+        })),
+        ...teamBPlayers.map((p, pIdx) => ({
+          id: p.id,
+          name: p.name,
+          avatar: p.avatar,
+          team: 'teamB' as const,
+          alive: (idx + pIdx + 1) % 2 === 0,
+          kills: (idx + pIdx + 3) % 7,
+          deaths: (idx + pIdx + 1) % 6,
+        })),
+      ],
+    }
+  })
+
   return {
     matches,
     canPlayerSpectate: true,

@@ -3,16 +3,27 @@ local timer = KOSTimer
 local KOSPlayer = KOSPlayerClass
 local storage = Storage
 local utils = KOSUtils
+local loadout = Loadout
+
+local nextBucketId = math.max(1, math.floor(tonumber(ServerConfig.KOS.Buckets and ServerConfig.KOS.Buckets.StartAt) or 5000))
+
+local function generateBucketId()
+    local bucket = nextBucketId
+    nextBucketId = nextBucketId + 1
+    return bucket
+end
 
 function KOS:constructor(data)
     self.id = utils.generateNanoId(10)
     self.hostId = data.hostId
+    self.bucket = (ServerConfig.KOS.Buckets and ServerConfig.KOS.Buckets.Enabled == true) and generateBucketId() or 0
 
     local rs = tonumber(data and data.roundSeconds)
     self.settings = {
         mode = utils.normalizeModeKey(data and data.mode),
         amount = data.amount or 10,
         map = Maps.get(data and data.mapId or nil),
+        loadoutId = Loadout.hasPreset(data and data.loadoutId or nil) and (data and data.loadoutId or nil) or nil,
         roundSeconds = (type(rs) == 'number' and rs > 0) and math.floor(rs) or nil,
     }
 
@@ -350,6 +361,7 @@ function KOS:PersistMatchResult(matchWinnerTeam)
         teamA = {},
         teamB = {},
     }
+    local gangMatchStats = {}
     local gangInfoByName = {}
     local participants = {}
     local now = os.time()
@@ -359,6 +371,7 @@ function KOS:PersistMatchResult(matchWinnerTeam)
         local playerId = self.players.playerIds[i]
         local player = self:GetPlayer(playerId)
         if player then
+            local memory = player:get('memory') or {}
             local didWin = winnerTeam ~= nil and player.team == winnerTeam
             player:FinalizeMatch(didWin)
             local payload = player:ToSavePayload()
@@ -367,6 +380,14 @@ function KOS:PersistMatchResult(matchWinnerTeam)
             if payload.gang and payload.gang.name and payload.gang.name ~= '' and (player.team == 'teamA' or player.team == 'teamB') then
                 local gangName = payload.gang.name
                 teamGangCounts[player.team][gangName] = (teamGangCounts[player.team][gangName] or 0) + 1
+                if not gangMatchStats[gangName] then
+                    gangMatchStats[gangName] = {
+                        kills = 0,
+                        deaths = 0,
+                    }
+                end
+                gangMatchStats[gangName].kills = (gangMatchStats[gangName].kills or 0) + (tonumber(memory.kills) or 0)
+                gangMatchStats[gangName].deaths = (gangMatchStats[gangName].deaths or 0) + (tonumber(memory.deaths) or 0)
                 if not gangInfoByName[gangName] then
                     gangInfoByName[gangName] = {
                         name = gangName,
@@ -381,7 +402,12 @@ function KOS:PersistMatchResult(matchWinnerTeam)
                 name = payload.name,
                 team = player.team,
                 gang = payload.gang,
-                stats = payload,
+                avatar = payload.avatar,
+                stats = {
+                    kills = memory.kills or 0,
+                    deaths = memory.deaths or 0,
+                    headshots = memory.headshots or 0,
+                },
             }
         end
     end
@@ -412,8 +438,8 @@ function KOS:PersistMatchResult(matchWinnerTeam)
         }
         storage.UpsertGangStats({
             gang = winnerGang,
-            kills = 0,
-            deaths = 0,
+            kills = gangMatchStats[dominantGangName] and gangMatchStats[dominantGangName].kills or 0,
+            deaths = gangMatchStats[dominantGangName] and gangMatchStats[dominantGangName].deaths or 0,
             matchesPlayed = 1,
             wins = 1,
             losses = 0,
@@ -445,6 +471,14 @@ function KOS:PersistMatchResult(matchWinnerTeam)
             name = gangInfoByName[losingGangName].name,
             label = gangInfoByName[losingGangName].label,
         }
+        storage.UpsertGangStats({
+            gang = loserGang,
+            kills = gangMatchStats[losingGangName] and gangMatchStats[losingGangName].kills or 0,
+            deaths = gangMatchStats[losingGangName] and gangMatchStats[losingGangName].deaths or 0,
+            matchesPlayed = 1,
+            wins = 0,
+            losses = 1,
+        })
     end
 
     storage.InsertMatchHistory({
@@ -472,19 +506,23 @@ function KOS:EndRound(roundWinner)
     local matchWinner = self:ResolveMatchWinner()
     local isMatchOver = (matchWinner ~= nil) or (self.series.index >= self.series.totalRounds)
 
-    if self.settings.mode == 'competitive' and isMatchOver then
-        local all = self.players.playerIds
-        if all and #all > 0 then
-            lib.triggerClientEvent(Events.CLIENT_ROUND_END, all, {
-                matchId = self.id,
-                roundNonce = self.round.nonce,
-                winnerTeam = roundWinner,
-                nextRound = false,
-            })
-            lib.triggerClientEvent(Events.CLIENT_MATCH_END, all, {
-                matchId = self.id,
-                winnerTeam = matchWinner,
-            })
+    local all = self.players.playerIds
+    if all and #all > 0 then
+        lib.triggerClientEvent(Events.CLIENT_ROUND_END, all, {
+            matchId = self.id,
+            roundNonce = self.round.nonce,
+            winnerTeam = roundWinner,
+            nextRound = not isMatchOver,
+        })
+        
+        if isMatchOver then
+             CreateThread(function()
+                 Wait(2500) -- Give players time to see the Round End message first
+                 lib.triggerClientEvent(Events.CLIENT_MATCH_END, all, {
+                     matchId = self.id,
+                     winnerTeam = matchWinner,
+                 })
+             end)
         end
     end
 
@@ -494,20 +532,15 @@ function KOS:EndRound(roundWinner)
         return self:PersistMatchResult(matchWinner)
     end
 
-    if self.settings.mode == 'competitive' then
-        local all = self.players.playerIds
-        if all and #all > 0 then
-            lib.triggerClientEvent(Events.CLIENT_ROUND_END, all, {
-                matchId = self.id,
-                roundNonce = self.round.nonce,
-                winnerTeam = roundWinner,
-                nextRound = true,
-            })
-        end
-    end
-
     self.series.index = self.series.index + 1
-    self:startRound()
+    
+    -- Wait for the end-round announcer to finish before starting next round
+    CreateThread(function()
+        Wait(4000) 
+        if self.state == 'in_progress' then
+            self:startRound()
+        end
+    end)
     return true
 end
 
@@ -652,6 +685,8 @@ function KOS:remove()
             local pid = player.playerId or entry.id
             if pid then
                 TriggerClientEvent(Events.CLIENT_MATCH_END, pid, { matchId = self.id, winnerTeam = self:GetWinnerTeam() })
+                loadout.restoreInventory(pid)
+                player:RestoreOldBucket(pid)
                 player:RespawnAtOldCoords(pid)
             else
                 lib.print.debug(('cleanup: match %s had an empty slot (%s)'):format(self.id, tostring(entry.id)))
@@ -672,21 +707,13 @@ function KOS:startRound()
     end, self.id .. '_round_' .. roundIndex)
 
     local map = self.settings.map
+    
+    -- Sync state for everyone first
     for _, pid in ipairs(self.players.teamA.playerIds) do
         local player = self.players.teamA.players[pid]
         if player then
             player:stopSpectate()
             player:MarkAlive()
-            if self.settings.mode == 'competitive' then
-                player:Respawn(utils.pickSpawn(map, 'teamA'))
-                TriggerClientEvent(Events.CLIENT_ROUND_START, pid, {
-                    matchId = self.id,
-                    roundNonce = self.round.nonce,
-                    freezeMs = ServerConfig.KOS.RespawnDelayAfterRoundBreakMs,
-                })
-            else
-                player:RespawnAtTeamSpawn(map)
-            end
         end
     end
     for _, pid in ipairs(self.players.teamB.playerIds) do
@@ -694,19 +721,48 @@ function KOS:startRound()
         if player then
             player:stopSpectate()
             player:MarkAlive()
-            if self.settings.mode == 'competitive' then
-                player:Respawn(utils.pickSpawn(map, 'teamB'))
-                TriggerClientEvent(Events.CLIENT_ROUND_START, pid, {
-                    matchId = self.id,
-                    roundNonce = self.round.nonce,
-                    freezeMs = ServerConfig.KOS.RespawnDelayAfterRoundBreakMs,
-                })
-            else
-                player:RespawnAtTeamSpawn(map)
-            end
         end
     end
+    
     self:BroadcastMatchData()
+    
+    -- Trigger announcer and freeze UPFRONT for perfect sync
+    local all = self.players.playerIds
+    if all and #all > 0 then
+        lib.triggerClientEvent(Events.CLIENT_ROUND_START, all, {
+            matchId = self.id,
+            roundNonce = self.round.nonce,
+            countdownSeconds = 3, -- Default 3s
+            freezeMs = 3500, -- Slightly longer than countdown
+        })
+    end
+
+    local function queuePlayerRoundStart(pid, player, teamKey)
+        CreateThread(function()
+            loadout.prepareRound(pid, self.settings.loadoutId, function(loadoutOk)
+                if self.state ~= 'in_progress' or self:GetPlayer(pid) ~= player then
+                    return
+                end
+
+                if self.settings.mode == 'competitive' or self.settings.mode == 'kill_limit' or self.settings.mode == 'time_limit' then
+                    player:Respawn(utils.pickSpawn(map, teamKey), pid)
+                end
+            end)
+        end)
+    end
+
+    for _, pid in ipairs(self.players.teamA.playerIds) do
+        local player = self.players.teamA.players[pid]
+        if player then
+            queuePlayerRoundStart(pid, player, 'teamA')
+        end
+    end
+    for _, pid in ipairs(self.players.teamB.playerIds) do
+        local player = self.players.teamB.players[pid]
+        if player then
+            queuePlayerRoundStart(pid, player, 'teamB')
+        end
+    end
 end
 
 ---@param playerId number
@@ -720,6 +776,9 @@ function KOS:AddPlayer(playerId, teamId)
     local key = utils.teamBucketKey(teamId)
     player.team = key
     player:CaptureOldCoords()
+    player:CaptureOldBucket()
+    player:SetBucket(self.bucket)
+    loadout.confiscateForMatch(playerId, self.settings.loadoutId)
     player:MarkAlive()
     utils.rosterAdd(self, key, player)
     if self.state == 'in_progress' then
@@ -787,6 +846,8 @@ function KOS:RemovePlayer(playerId)
     player:FlushMemoryToPersistent()
     storage.UpsertPlayerStats(player:ToSavePayload())
     self:ClearClientMatch({ playerId })
+    loadout.restoreInventory(playerId)
+    player:RestoreOldBucket(playerId)
     player:remove()
     utils.slotRemovePlayer(self.players[key], playerId)
     utils.collectiveRemove(self.players.playerIds, playerId)

@@ -4,15 +4,18 @@ import { KOSMenu } from './admin/KOSMenu'
 import { RoundHud } from '@/components/hud/RoundHud'
 import { MatchScoreboard } from '@/components/scoreboard/MatchScoreboard'
 import { Killfeed } from '@/components/killfeed/Killfeed'
-import { useNuiStore } from '@/store/nuiStore'
+import { RoundAnnouncer } from '@/components/hud/RoundAnnouncer'
+import { SpectateOverlay } from '@/components/hud/SpectateOverlay'
+import { useNuiStore, type AnnouncerState, type SpectateState } from '@/store/nuiStore'
 import { nuiGetUiConfig, nuiGetUiLocale } from '@/utils/kosMenuNui'
 import type { MatchNuiMessage } from '@/types/match'
-import type { KosMap } from '@/types/admin'
+import type { KosLoadout, KosMap } from '@/types/admin'
 import type { UiConfig } from '@/types/ui'
 
 interface OpenMenuPayload {
   isAdmin?: boolean
   maps?: KosMap[]
+  loadouts?: KosLoadout[]
 }
 
 const defaultUiConfig: UiConfig = {
@@ -156,6 +159,7 @@ const App = () => {
   const setAdminOpen = useNuiStore((s) => s.setAdminOpen)
   const setIsAdmin = useNuiStore((s) => s.setIsAdmin)
   const setMenuMaps = useNuiStore((s) => s.setMenuMaps)
+  const setMenuLoadouts = useNuiStore((s) => s.setMenuLoadouts)
   const uiConfig = useNuiStore((s) => s.uiConfig)
   const setUiConfig = useNuiStore((s) => s.setUiConfig)
   const setLocale = useNuiStore((s) => s.setLocale)
@@ -183,15 +187,27 @@ const App = () => {
     setIsAdmin(Boolean(payload?.isAdmin))
     setAdminOpen(true)
     setMenuMaps(payload?.maps ?? [])
+    setMenuLoadouts(payload?.loadouts ?? [])
   })
   useNuiEvent('menuClosed', () => {
     setAdminOpen(false)
     setIsAdmin(false)
     setMenuMaps([])
+    setMenuLoadouts([])
   })
   useNuiEvent('scoreboardToggle', () => toggleScoreboard())
   useNuiEvent<Record<string, string>>('setLocale', (payload) => {
     setLocale(payload ?? {})
+  })
+  useNuiEvent<AnnouncerState>('setAnnouncer', (payload) => {
+    if (payload) {
+      useNuiStore.getState().setAnnouncer(payload)
+    }
+  })
+  useNuiEvent<Partial<SpectateState>>('setSpectate', (payload) => {
+    if (payload) {
+      useNuiStore.getState().setSpectate(payload)
+    }
   })
 
   const payload = matchData?.match ?? null
@@ -201,6 +217,8 @@ const App = () => {
 
   return (
     <div className="pointer-events-none fixed inset-0">
+      <RoundAnnouncer />
+      <SpectateOverlay />
       {showMatchLayers && payload && (
         <>
           {components.roundHud !== false && <RoundHud data={payload} localPlayerId={localId} />}

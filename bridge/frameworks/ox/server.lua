@@ -44,11 +44,31 @@ function framework.GetPlayerName(playerId)
     return player.username or GetPlayerName(playerId) or ''
 end
 
----@param _playerId number
----@return string|nil
-function framework.GetGangName(_playerId)
-    return nil
+---@return number[]
+function framework.GetPlayers()
+    local output = {}
+    local players = Ox.GetPlayers() or {}
+    for i = 1, #players do
+        local player = players[i]
+        local id = player and tonumber(player.source)
+        if id and id > 0 then
+            output[#output + 1] = id
+        end
+    end
+    return output
 end
+
+---@param playerId number
+---@param bucket number|nil
+---@return boolean
+function framework.SetPlayerBucket(playerId, bucket)
+    SetPlayerRoutingBucket(playerId, bucket or 0)
+    return true
+end
+
+AddEventHandler('_playerLoaded', function()
+    TriggerEvent(Events.SERVER_PLAYER_LOADED, source)
+end)
 
 AddEventHandler('ox:playerLogout', function(playerId)
     TriggerEvent(Events.SERVER_PLAYER_DROPPED, tonumber(playerId) or source)

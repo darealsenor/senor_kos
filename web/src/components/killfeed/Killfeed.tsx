@@ -40,7 +40,7 @@ export function Killfeed({ localPlayerId }: KillfeedProps) {
 
   return (
     <motion.div
-      className="pointer-events-none fixed right-[3%] top-[12%] z-hud flex w-[min(360px,36vw)] flex-col items-end justify-start gap-0.5 bg-transparent p-1.5"
+      className="pointer-events-none fixed right-[3%] top-[12%] z-hud flex w-[min(360px,36vw)] flex-col items-end justify-start gap-[10px] bg-transparent p-1.5"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.2 }}

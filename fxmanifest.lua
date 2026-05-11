@@ -39,6 +39,8 @@ shared_scripts {
 client_scripts {
   'config/client_config.lua',
   'client/state.lua',
+  'client/loadout.lua',
+  'client/relations.lua',
   'client/kill_detection.lua',
   'client/locale.lua',
   'client/utils.lua',
@@ -59,6 +61,7 @@ server_scripts {
   'server/utils.lua',
   'server/timer.lua',
   'server/avatar.lua',
+  'server/loadout.lua',
   'server/player.lua',
   'server/class.lua',
   'server/match_manager.lua',

@@ -61,7 +61,7 @@ end
 ---@param _playerId number
 ---@return table|nil
 function gang.GetPlayerGang(_playerId)
-    local playerGang = exports['core_gangs']:getPlayerOrganization(_playerId)
+    local playerGang = exports['core_gangs']:getOrganization(_playerId)
     if playerGang then
         local gangName = tostring(playerGang)
         if Shared.IsGangBlacklisted(gangName, gangName) then

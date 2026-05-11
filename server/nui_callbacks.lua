@@ -92,6 +92,11 @@ local function createMatchFromMenu(source, data)
         mapId = nil
     end
 
+    local loadoutId = data and tostring(data.loadoutId or '') or ''
+    if loadoutId == '' or not Loadout.hasPreset(loadoutId) then
+        loadoutId = nil
+    end
+
     local matchId = matchManager.CreateMatch({
         hostId = source,
         mode = modeKey,
@@ -99,6 +104,7 @@ local function createMatchFromMenu(source, data)
         rounds = rounds,
         roundSeconds = roundSeconds,
         mapId = mapId,
+        loadoutId = loadoutId,
         players = players,
         teams = {
             teamA = { players = {} },
@@ -149,21 +155,58 @@ local function summarizeActiveMatch(match)
     }
 end
 
----@param source number
 ---@param match table
----@return nil
-local function spectateTargetForSource(source, match)
-    if source <= 0 or not match then
-        return
+---@param requesterId number
+---@return number[]
+local function buildMatchCandidates(match, requesterId)
+    local out = {}
+    if not match then
+        return out
     end
     local players = match:GetMatchData().players or {}
     for i = 1, #players do
         local p = players[i]
-        if p and p.alive == true then
-            TriggerClientEvent('kos:player:spectateTarget', source, p.id)
-            return
+        if p and p.id and p.id ~= requesterId and p.alive == true then
+            out[#out + 1] = p.id
         end
     end
+    return out
+end
+
+---@param source number
+---@param match table
+---@param scope string 'team'|'match'
+---@param explicitTarget number|nil
+---@return boolean
+local function dispatchSpectate(source, match, scope, explicitTarget)
+    if source <= 0 or not match then
+        return false
+    end
+    local candidates = buildMatchCandidates(match, source)
+    if #candidates == 0 then
+        return false
+    end
+    local targetId = explicitTarget
+    if not targetId or targetId <= 0 then
+        targetId = candidates[1]
+    else
+        local found = false
+        for i = 1, #candidates do
+            if candidates[i] == targetId then
+                found = true
+                break
+            end
+        end
+        if not found then
+            targetId = candidates[1]
+        end
+    end
+    TriggerClientEvent('kos:player:spectateTarget', source, {
+        targetId = targetId,
+        scope = scope == 'match' and 'match' or 'team',
+        candidates = scope == 'match' and candidates or nil,
+    })
+    return true
 end
 
 ---@param source number
@@ -250,7 +293,7 @@ lib.callback.register('kos:server:createMatchFromMenu', function(source, data)
 end)
 
 lib.callback.register('kos:server:getOnlinePlayers', function(source, data)
-    local online = GetPlayers()
+    local online = Bridge.framework.GetPlayers()
     local out = {}
     for i = 1, #online do
         local sid = tonumber(online[i])
@@ -260,6 +303,7 @@ lib.callback.register('kos:server:getOnlinePlayers', function(source, data)
             end
             local name = GetPlayerName(sid) or ('Player ' .. tostring(sid))
             local avatar = avatarModule.Get(sid)
+            local gang = Bridge.gangs.GetPlayerGang(sid)
             if not avatar then
                 local identifier = Bridge.framework.GetPlayerIdentifier(sid)
                 if identifier and identifier ~= '' then
@@ -267,7 +311,15 @@ lib.callback.register('kos:server:getOnlinePlayers', function(source, data)
                     avatar = row and row.avatar or nil
                 end
             end
-            out[#out + 1] = { id = sid, name = tostring(name), avatar = avatar }
+            out[#out + 1] = {
+                id = sid,
+                name = tostring(name),
+                avatar = avatar,
+                gang = gang and {
+                    name = gang.name,
+                    label = gang.label,
+                } or nil,
+            }
         end
         ::continue::
     end
@@ -321,11 +373,10 @@ lib.callback.register('kos:server:activeMatchAction', function(source, data)
         end
         local targetId = tonumber(data and data.targetPlayerId) or 0
         targetId = math.floor(targetId)
-        if targetId > 0 then
-            TriggerClientEvent('kos:player:spectateTarget', source, targetId)
-            return { ok = true }
+        local scope = admin and 'match' or 'team'
+        if not dispatchSpectate(source, match, scope, targetId > 0 and targetId or nil) then
+            return { ok = false, error = 'no spectate target' }
         end
-        spectateTargetForSource(source, match)
         return { ok = true }
     end
 

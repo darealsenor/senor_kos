@@ -1,5 +1,29 @@
 local adminOpen = false
 
+---@return table[]
+local function listLoadoutsForUi()
+    local rows = {}
+    local presets = Shared.Loadouts
+    if type(presets) ~= 'table' then
+        return rows
+    end
+
+    for loadoutId, preset in pairs(presets) do
+        if type(loadoutId) == 'string' and type(preset) == 'table' and type(preset.items) == 'table' and next(preset.items) then
+            rows[#rows + 1] = {
+                id = loadoutId,
+                name = tostring(preset.label or loadoutId),
+            }
+        end
+    end
+
+    table.sort(rows, function(a, b)
+        return a.name < b.name
+    end)
+
+    return rows
+end
+
 ---@return nil
 local function sendLocaleData()
     SendReactMessage('setLocale', Locale.GetData())
@@ -52,7 +76,8 @@ RegisterNetEvent(Events.CLIENT_OPEN_ADMIN, function(payload)
     sendLocaleData()
     local isAdmin = payload and payload.isAdmin == true
     local maps = Maps.listForUi()
-    SendReactMessage('openMenu', { isAdmin = isAdmin, maps = maps })
+    local loadouts = listLoadoutsForUi()
+    SendReactMessage('openMenu', { isAdmin = isAdmin, maps = maps, loadouts = loadouts })
     SetNuiFocus(true, true)
 end)
 

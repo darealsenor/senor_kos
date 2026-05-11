@@ -1,6 +1,7 @@
 Config = Config or {}
 
 Config.ScoreboardKey = 'B'
+Config.autoPullWeapon = false
 
 Config.UI = {
     colorScheme = {
@@ -15,3 +16,5 @@ Config.UI = {
         killfeed = true
     }
 }
+
+Config.Relations = true

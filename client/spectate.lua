@@ -4,8 +4,11 @@ local state = {
     currentServerId = nil,
     currentIndex = 0,
     sessionId = 0,
+    scope = 'team',
+    externalCandidates = nil,
 }
 
+local prevTargetKeybind
 local nextTargetKeybind
 local stopSpectateKeybind
 
@@ -19,24 +22,41 @@ local function normalizeKeyLabel(value, fallback)
     return tostring(value):upper()
 end
 
----@return string
-local function getSpectateUiText()
-    local nextLabel = normalizeKeyLabel(nextTargetKeybind and nextTargetKeybind:getCurrentKey(), 'E')
+---@return string, string, string
+local function currentKeyLabels()
+    local prevLabel = normalizeKeyLabel(prevTargetKeybind and prevTargetKeybind:getCurrentKey(), 'LEFT')
+    local nextLabel = normalizeKeyLabel(nextTargetKeybind and nextTargetKeybind:getCurrentKey(), 'RIGHT')
     local stopLabel = normalizeKeyLabel(stopSpectateKeybind and stopSpectateKeybind:getCurrentKey(), 'BACK')
-    return ('[%s] - Next Teammate\n[%s] - Stop Spectating'):format(nextLabel, stopLabel)
+    return prevLabel, nextLabel, stopLabel
+end
+
+---@return number
+local function countAliveTeammates()
+    local _, teammates = KOSState.getMyTeam(true)
+    return teammates and #teammates or 0
 end
 
 ---@return nil
-local function showSpectateTextUi()
-    lib.showTextUI(getSpectateUiText(), { position = 'bottom-center' })
-end
-
----@return nil
-local function hideSpectateTextUi()
-    local isOpen = lib.isTextUIOpen()
-    if isOpen then
-        lib.hideTextUI()
+local function pushSpectateNui()
+    if not state.isSpectating or not state.currentServerId then
+        SendReactMessage('setSpectate', { visible = false })
+        return
     end
+    local prevLabel, nextLabel, stopLabel = currentKeyLabels()
+    SendReactMessage('setSpectate', {
+        visible = true,
+        targetId = state.currentServerId,
+        scope = state.scope,
+        prevKey = prevLabel,
+        nextKey = nextLabel,
+        stopKey = stopLabel,
+        aliveCount = state.scope == 'team' and countAliveTeammates() or nil,
+    })
+end
+
+---@return nil
+local function hideSpectateNui()
+    SendReactMessage('setSpectate', { visible = false })
 end
 
 ---@return nil
@@ -45,13 +65,15 @@ local function resetSpectateState()
     state.currentPed = nil
     state.currentServerId = nil
     state.currentIndex = 0
+    state.scope = 'team'
+    state.externalCandidates = nil
 end
 
 ---@return nil
 local function stopSpectate()
     state.sessionId = state.sessionId + 1
     local lastPed = state.currentPed or cache.ped
-    hideSpectateTextUi()
+    hideSpectateNui()
     resetSpectateState()
     if lastPed and lastPed ~= 0 then
         NetworkSetInSpectatorMode(false, lastPed)
@@ -76,6 +98,16 @@ end
 
 ---@return number[]
 local function getSpectateCandidates()
+    if state.externalCandidates and #state.externalCandidates > 0 then
+        local out = {}
+        for i = 1, #state.externalCandidates do
+            local id = state.externalCandidates[i]
+            if id and id ~= cache.serverId then
+                out[#out + 1] = id
+            end
+        end
+        return out
+    end
     local myTeam, myTeamData = KOSState.getMyTeam(true)
     if not myTeam or not myTeamData or #myTeamData == 0 then
         return {}
@@ -104,9 +136,10 @@ local function spectateServerId(serverId)
     return true
 end
 
+---@param direction number 1 = forward, -1 = backward
 ---@param stopOnFail boolean|nil
 ---@return boolean
-local function spectateNextTarget(stopOnFail)
+local function spectateStep(direction, stopOnFail)
     local candidates = getSpectateCandidates()
     if #candidates == 0 then
         if stopOnFail ~= false then
@@ -114,27 +147,41 @@ local function spectateNextTarget(stopOnFail)
         end
         return false
     end
-    local nextIndex = 1
+    local step = direction == -1 and -1 or 1
+    local startIndex = 0
     if state.currentServerId then
         for i = 1, #candidates do
             if candidates[i] == state.currentServerId then
-                nextIndex = i + 1
+                startIndex = i
                 break
             end
         end
     elseif state.currentIndex > 0 then
-        nextIndex = state.currentIndex + 1
+        startIndex = state.currentIndex
     end
-    if nextIndex > #candidates then
-        nextIndex = 1
+    local targetIndex = startIndex + step
+    if targetIndex < 1 then
+        targetIndex = #candidates
+    elseif targetIndex > #candidates then
+        targetIndex = 1
     end
-    state.currentIndex = nextIndex
-    if spectateServerId(candidates[nextIndex]) then
+    state.currentIndex = targetIndex
+    if spectateServerId(candidates[targetIndex]) then
+        pushSpectateNui()
         return true
     end
-    for i = 1, #candidates do
-        if i ~= nextIndex and spectateServerId(candidates[i]) then
-            state.currentIndex = i
+    -- fallback: walk in the same direction looking for any valid target
+    local probe = targetIndex
+    for _ = 1, #candidates - 1 do
+        probe = probe + step
+        if probe < 1 then
+            probe = #candidates
+        elseif probe > #candidates then
+            probe = 1
+        end
+        if probe ~= targetIndex and spectateServerId(candidates[probe]) then
+            state.currentIndex = probe
+            pushSpectateNui()
             return true
         end
     end
@@ -155,10 +202,12 @@ local function startMonitorThread(sessionId)
             end
             local ped = state.currentPed
             if not ped or not DoesEntityExist(ped) or IsEntityDead(ped) then
-                if not spectateNextTarget(false) then
+                if not spectateStep(1, false) then
                     stopSpectate()
                     break
                 end
+            elseif state.scope == 'team' then
+                pushSpectateNui()
             end
         end
     end)
@@ -172,71 +221,99 @@ local function startSpectate()
     local previousSession = state.sessionId
     local sessionId = previousSession + 1
     state.sessionId = sessionId
-    if not spectateNextTarget(false) then
+    state.scope = 'team'
+    state.externalCandidates = nil
+    if not spectateStep(1, false) then
         state.sessionId = previousSession
         resetSpectateState()
         return
     end
-    showSpectateTextUi()
     startMonitorThread(sessionId)
 end
 
----@param targetServerId number
+---@param payload table|number
 ---@return nil
-local function startSpectateTarget(targetServerId)
-    if not targetServerId or targetServerId <= 0 then
+local function startSpectateTarget(payload)
+    local targetId, scope, candidates
+    if type(payload) == 'table' then
+        targetId = tonumber(payload.targetId) or 0
+        scope = tostring(payload.scope or 'team')
+        candidates = type(payload.candidates) == 'table' and payload.candidates or nil
+    else
+        targetId = tonumber(payload) or 0
+        scope = 'team'
+        candidates = nil
+    end
+    targetId = math.floor(targetId)
+    if targetId <= 0 then
         return
     end
     local previousSession = state.sessionId
     local sessionId = previousSession + 1
     state.sessionId = sessionId
-    if not spectateServerId(targetServerId) then
+    state.scope = scope == 'match' and 'match' or 'team'
+    state.externalCandidates = candidates
+    if not spectateServerId(targetId) then
         state.sessionId = previousSession
         resetSpectateState()
         return
     end
-    showSpectateTextUi()
+    -- remember the index of the chosen target inside the external list, if any
+    if candidates then
+        for i = 1, #candidates do
+            if candidates[i] == targetId then
+                state.currentIndex = i
+                break
+            end
+        end
+    end
+    pushSpectateNui()
     startMonitorThread(sessionId)
 end
 
-nextTargetKeybind = lib.addKeybind({
-    name = 'kos_spectate_next_target',
-    description = 'Spectate next teammate',
-    defaultKey = 'E',
+local keys = (Shared and Shared.Spectate and Shared.Spectate.keys) or {}
+
+prevTargetKeybind = lib.addKeybind({
+    name = 'kos_spectate_prev_target',
+    description = locale('spectate_keybind_prev'),
+    defaultKey = keys.prev or 'LEFT',
     disabled = false,
     onPressed = function()
         if state.isSpectating then
-            spectateNextTarget(false)
-            showSpectateTextUi()
+            spectateStep(-1, false)
+        end
+    end,
+})
+
+nextTargetKeybind = lib.addKeybind({
+    name = 'kos_spectate_next_target',
+    description = locale('spectate_keybind_next'),
+    defaultKey = keys.next or 'RIGHT',
+    disabled = false,
+    onPressed = function()
+        if state.isSpectating then
+            spectateStep(1, false)
         end
     end,
 })
 
 stopSpectateKeybind = lib.addKeybind({
     name = 'kos_spectate_stop',
-    description = 'Stop spectating',
-    defaultKey = 'BACK',
+    description = locale('spectate_keybind_stop'),
+    defaultKey = keys.stop or 'BACK',
     disabled = false,
     onPressed = function()
-        if state.isSpectating then
+        -- only outside spectators (match scope) can exit voluntarily;
+        -- in-match dead players (team scope) must wait for round end / respawn
+        if state.isSpectating and state.scope == 'match' then
             stopSpectate()
         end
     end,
 })
 
--- RegisterCommand('spectate', function()
---     if state.isSpectating then
---         stopSpectate()
---         return
---     end
---     startSpectate()
--- end, false)
-
 RegisterNetEvent('kos:player:startSpectate', startSpectate)
 RegisterNetEvent('kos:player:stopSpectate', stopSpectate)
-RegisterNetEvent('kos:player:spectateTarget', function(targetServerId)
-    startSpectateTarget(tonumber(targetServerId) or 0)
-end)
+RegisterNetEvent('kos:player:spectateTarget', startSpectateTarget)
 RegisterNetEvent(Events.CLIENT_ROUND_START, stopSpectate)
 RegisterNetEvent(Events.CLIENT_ROUND_END, function(payload)
     if payload and payload.nextRound ~= true then

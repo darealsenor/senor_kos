@@ -50,6 +50,7 @@ export interface MatchHistoryParticipant {
   source: number
   identifier: string
   name?: string | null
+  avatar?: string | null
   team?: string | null
   gang?: { name?: string; label?: string } | null
   stats?: Record<string, unknown> | null
@@ -70,10 +71,16 @@ export interface KosMap {
   name: string
 }
 
+export interface KosLoadout {
+  id: string
+  name: string
+}
+
 export interface OnlinePlayerRow {
   id: number
   name: string
   avatar?: string | null
+  gang?: { name?: string; label?: string } | null
 }
 
 export interface GetMapsResponse {

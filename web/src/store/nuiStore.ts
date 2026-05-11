@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import type { MatchNuiMessage } from '@/types/match'
-import type { KosMap } from '@/types/admin'
+import type { KosLoadout, KosMap } from '@/types/admin'
 import type { UiConfig } from '@/types/ui'
 import { isEnvBrowser } from '@/utils/misc'
 import { mockMatchMessage } from '@/dev/mockMatch'
@@ -21,21 +21,46 @@ const defaultUiConfig: UiConfig = {
   },
 }
 
+export interface AnnouncerState {
+  visible: boolean
+  type: 'start' | 'end'
+  title: string
+  subtitle?: string
+  seconds: number
+  colorTheme?: 'teamA' | 'teamB' | 'neutral'
+}
+
+export interface SpectateState {
+  visible: boolean
+  targetId: number
+  scope: 'team' | 'match'
+  prevKey: string
+  nextKey: string
+  stopKey: string
+  aliveCount?: number
+}
+
 interface NuiStore {
   matchData: MatchNuiMessage | null
   scoreboardOpen: boolean
   adminOpen: boolean
   isAdmin: boolean
   menuMaps: KosMap[]
+  menuLoadouts: KosLoadout[]
   uiConfig: UiConfig
   locale: Record<string, string>
+  announcer: AnnouncerState
+  spectate: SpectateState
   setMatchData: (payload: MatchNuiMessage | null) => void
   setScoreboardOpen: (v: BoolOrUpdater) => void
   setAdminOpen: (v: BoolOrUpdater) => void
   setIsAdmin: (v: BoolOrUpdater) => void
   setMenuMaps: (v: KosMap[] | ((prev: KosMap[]) => KosMap[])) => void
+  setMenuLoadouts: (v: KosLoadout[] | ((prev: KosLoadout[]) => KosLoadout[])) => void
   setUiConfig: (v: UiConfig) => void
   setLocale: (v: Record<string, string>) => void
+  setAnnouncer: (v: Partial<AnnouncerState>) => void
+  setSpectate: (v: Partial<SpectateState>) => void
   toggleScoreboard: () => void
 }
 
@@ -48,8 +73,23 @@ export const useNuiStore = create<NuiStore>((set) => ({
   adminOpen: false,
   isAdmin: false,
   menuMaps: [],
+  menuLoadouts: [],
   uiConfig: defaultUiConfig,
   locale: {},
+  announcer: {
+    visible: false,
+    type: 'start',
+    title: '',
+    seconds: 0
+  },
+  spectate: {
+    visible: false,
+    targetId: 0,
+    scope: 'team',
+    prevKey: 'LEFT',
+    nextKey: 'RIGHT',
+    stopKey: 'BACK',
+  },
   setMatchData: (payload) =>
     set((s) => ({
       matchData: payload,
@@ -71,6 +111,10 @@ export const useNuiStore = create<NuiStore>((set) => ({
     set((s) => ({
       menuMaps: typeof v === 'function' ? (v as (p: KosMap[]) => KosMap[])(s.menuMaps) : v,
     })),
+  setMenuLoadouts: (v) =>
+    set((s) => ({
+      menuLoadouts: typeof v === 'function' ? (v as (p: KosLoadout[]) => KosLoadout[])(s.menuLoadouts) : v,
+    })),
   setUiConfig: (v) =>
     set(() => ({
       uiConfig: {
@@ -81,6 +125,14 @@ export const useNuiStore = create<NuiStore>((set) => ({
   setLocale: (v) =>
     set(() => ({
       locale: v ?? {},
+    })),
+  setAnnouncer: (v) =>
+    set((s) => ({
+      announcer: { ...s.announcer, ...v }
+    })),
+  setSpectate: (v) =>
+    set((s) => ({
+      spectate: { ...s.spectate, ...v },
     })),
   toggleScoreboard: () => set((s) => ({ scoreboardOpen: !s.scoreboardOpen })),
 }))

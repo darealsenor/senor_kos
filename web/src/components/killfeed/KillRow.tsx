@@ -17,64 +17,76 @@ export function KillRow(props: KillRowProps) {
   return (
     <motion.div
       className={cn(
-        'flex h-9 items-center justify-center gap-1.5 rounded-md border px-2 py-0.5',
-        myKill && 'border-emerald-500/50 shadow-[inset_0_0_0_1px_rgba(52,211,153,0.2)]',
-        myDeath && 'border-red-500/50 shadow-[inset_0_0_0_1px_rgba(239,68,68,0.2)]',
-        !myKill && !myDeath && 'border-white/10'
+        'flex h-[40px] items-center justify-center gap-3 rounded-full border border-white/[0.03] px-2.5',
+        myKill && 'shadow-[inset_0_0_0_1px_rgba(52,211,153,0.2)]',
+        myDeath && 'shadow-[inset_0_0_0_1px_rgba(239,68,68,0.2)]',
       )}
-      style={{ backgroundColor: 'rgba(var(--kos-background-dark-rgb), 0.90)' }}
+      style={{
+        background: myDeath
+          ? 'linear-gradient(90deg, rgba(159,58,58,0.95) 0%, rgba(20,22,25,0.85) 100%)'
+          : myKill
+            ? 'linear-gradient(90deg, rgba(52,211,153,0.3) 0%, rgba(20,22,25,0.9) 100%)'
+            : 'linear-gradient(90deg, rgba(20,22,25,0.95) 0%, rgba(20,22,25,0.45) 100%)',
+      }}
       initial={{ scale: 0.96, opacity: 0 }}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.18 }}
     >
       <div
         className={cn(
-          'flex items-center gap-0.5 rounded-sm px-1.5 py-0.5',
-          myKill ? 'bg-emerald-500/15' : 'bg-white/5'
+          'flex h-[26px] min-w-[56px] items-center justify-center rounded-full px-2',
+          myKill ? 'bg-emerald-500/15' : 'bg-white/[0.04]',
         )}
       >
-        <Ruler className="size-2.5 text-zinc-400" />
-        <span className={cn('text-[10px] font-semibold tabular-nums', myKill ? 'text-emerald-300' : 'text-zinc-400')}>
-          {props.meters}m
+        <span className="text-[14px] font-bold tabular-nums flex items-center">
+          {(() => {
+            const m = props.meters.toString().padStart(3, '0')
+            const leadingZerosLength = m.match(/^0+/)?.[0].length || 0
+            const prefix = m.substring(0, leadingZerosLength)
+            const body = m.substring(leadingZerosLength)
+
+            return (
+              <>
+                <span className={cn(myKill ? 'text-emerald-500/40' : 'text-white/20')}>{prefix}</span>
+                <span className={cn(myKill ? 'text-emerald-300' : 'text-white')}>{body}</span>
+              </>
+            )
+          })()}
+          <span className={cn(myKill ? 'text-emerald-300' : 'text-white', 'ml-[1px]')}>m</span>
         </span>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2">
         <img
           src={props.killer.image}
           alt=""
           className={cn(
-            'size-5 rounded-full border object-cover',
-            myKill ? 'border-emerald-500/50' : 'border-white/15'
+            'size-[24px] rounded-[5px] border object-cover',
+            myKill ? 'border-emerald-500/50' : 'border-transparent',
           )}
         />
         <span
           className={cn(
-            'max-w-[72px] truncate text-[11px] font-semibold',
-            myKill ? 'text-emerald-200' : 'text-zinc-100'
+            'max-w-[120px] truncate text-[16px] font-bold tracking-wide uppercase',
+            myKill ? 'text-emerald-200' : 'text-white',
           )}
         >
           {props.killer.name}
         </span>
       </div>
-      <div className="flex items-center gap-0.5 text-zinc-500">
-        <Crosshair className="size-4" style={{ transform: 'scale(-1,1)' }} />
-        {props.headshot && <span className="text-[9px] font-bold text-red-400">HS</span>}
+      <div className="flex items-center gap-0.5 text-zinc-500 mx-1">
+        <Crosshair className="size-[24px] text-[#ff3a3a]" strokeWidth={2} />
+        {props.headshot && <span className="text-[13px] font-black text-[#ff3a3a] leading-none ml-0.5">HS</span>}
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-2 pr-1">
         <img
           src={props.victim.image}
           alt=""
           className={cn(
-            'size-5 rounded-full border object-cover',
-            myDeath ? 'border-red-500/50' : 'border-white/15'
+            'size-[24px] rounded-[5px] border object-cover',
+            myDeath ? 'border-red-500/50' : 'border-transparent',
           )}
         />
-        <span
-          className={cn(
-            'max-w-[72px] truncate text-[11px] font-semibold',
-            myDeath ? 'text-red-200' : 'text-zinc-100'
-          )}
-        >
+        <span className="max-w-[120px] truncate text-[16px] font-bold tracking-wide uppercase text-[#ff3a3a]">
           {props.victim.name}
         </span>
       </div>

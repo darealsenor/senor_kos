@@ -35,6 +35,7 @@ export interface ActiveMatchActionPayload {
 export interface CreateMatchPayload {
   modeKey: 'kill_limit' | 'time_limit' | 'competitive'
   mapId: string
+  loadoutId?: string
   killsToWinRound?: number
   roundSeconds?: number
   rounds: number

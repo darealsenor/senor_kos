@@ -51,11 +51,31 @@ function framework.GetPlayerName(playerId)
     return player.getName() or GetPlayerName(playerId) or ''
 end
 
----@param _playerId number
----@return string|nil
-function framework.GetGangName(_playerId)
-    return nil
+---@return number[]
+function framework.GetPlayers()
+    local output = {}
+    local players = ESX.GetExtendedPlayers() or {}
+    for i = 1, #players do
+        local player = players[i]
+        local id = player and tonumber(player.source)
+        if id and id > 0 then
+            output[#output + 1] = id
+        end
+    end
+    return output
 end
+
+---@param playerId number
+---@param bucket number|nil
+---@return boolean
+function framework.SetPlayerBucket(playerId, bucket)
+    SetPlayerRoutingBucket(playerId, bucket or 0)
+    return true
+end
+
+AddEventHandler('esx:playerLoaded', function(playerId)
+    TriggerEvent(Events.SERVER_PLAYER_LOADED, playerId)
+end)
 
 AddEventHandler('esx:playerDropped', function(playerId)
     TriggerEvent(Events.SERVER_PLAYER_DROPPED, playerId)

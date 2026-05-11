@@ -1,4 +1,5 @@
 import { useNuiStore } from '@/store/nuiStore'
+import enLocale from '../../../locales/en.json'
 
 function formatLocaleMessage(template: string, args: Array<string | number>): string {
   if (args.length === 0) {
@@ -19,7 +20,7 @@ function formatLocaleMessage(template: string, args: Array<string | number>): st
 export function useLocale() {
   const localeData = useNuiStore((s) => s.locale)
   const t = (key: string, ...args: Array<string | number>): string => {
-    const str = localeData[key] ?? key
+    const str = localeData[key] ?? enLocale[key as keyof typeof enLocale] ?? key
     return formatLocaleMessage(str, args)
   }
   return { t, localeData }
