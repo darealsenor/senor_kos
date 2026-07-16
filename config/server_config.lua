@@ -23,16 +23,25 @@ ServerConfig.KOS = {
 -- Configured here (server_scripts only) so the anti-cheat resource name is
 -- never shipped to clients.
 --
--- Supported folders (drop-in implementations live in bridge/anticheat/<folder>):
+-- `name` picks the bridge implementation. Drop-ins live in
+-- bridge/anticheat/<name>/server.lua. Supported:
 --   'waveshield'  - WaveShield (verified against the v4 developer docs)
---   'default'     - your own anticheat (no-op template; edit server.lua)
+--   'fiveguard'   - FiveGuard (uses SetTempPermission + ACE permissions)
+--   'default'     - your own anti-cheat (no-op template; edit server.lua)
 --   ''            - disabled (default)
 --
+-- `folder` is the actual resource folder name on your server, used inside
+-- exports[...] calls. Set it to whatever you named the resource folder on
+-- disk. Common defaults:
+--   WaveShield: 'WaveShield'
+--   FiveGuard:  'fiveguard'
+--
 -- The exact export/event names used by each anti-cheat can change between
--- versions. Open the matching bridge/anticheat/<folder>/server.lua and confirm
+-- versions. Open the matching bridge/anticheat/<name>/server.lua and confirm
 -- the calls match the API of the build you are running.
 ServerConfig.AntiCheat = {
     enabled = false,
+    name = '',
     folder = '',
     -- ms each bypass window stays open after the protected action fires.
     -- Long enough for the AC to observe the resulting events, short enough

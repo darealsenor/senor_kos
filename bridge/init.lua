@@ -55,15 +55,25 @@ if lib.context == 'server' then
         end
 
         local cfg = ServerConfig and ServerConfig.AntiCheat
-        if not cfg or not cfg.enabled or not cfg.folder or cfg.folder == '' then
+        if not cfg or not cfg.enabled or not cfg.name or cfg.name == '' then
             return
         end
 
-        local path = ('bridge.anticheat.%s.server'):format(cfg.folder)
+        if not cfg.folder or cfg.folder == '' then
+            lib.print.error('[bridge] anticheat: ServerConfig.AntiCheat.folder is empty; set it to the resource folder name on disk')
+            return
+        end
+
+        if not GetResourceState(cfg.folder):find('start') then
+            lib.print.error(('[bridge] anticheat: resource "%s" is not started'):format(cfg.folder))
+            return
+        end
+
+        local path = ('bridge.anticheat.%s.server'):format(cfg.name)
         local ok, loaded = pcall(lib.load, path)
         if ok and type(loaded) == 'table' then
             bridgeState.anticheat = loaded
-            lib.print.debug(('[bridge] anticheat -> %s'):format(path))
+            lib.print.debug(('[bridge] anticheat -> %s (resource: %s)'):format(path, cfg.folder))
         else
             lib.print.error(('[bridge] anticheat: failed to load %s, falling back to default'):format(path))
         end

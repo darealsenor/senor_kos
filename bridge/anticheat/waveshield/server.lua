@@ -6,12 +6,24 @@ local antiCheat = {}
 ---@type table<number, number>
 local refs = {}
 
+local function getResource()
+    return ServerConfig and ServerConfig.AntiCheat and ServerConfig.AntiCheat.folder or ''
+end
+
+local function toggleBypass(playerId, allow)
+    local resource = getResource()
+    if resource == '' then
+        return
+    end
+    exports[resource]:toggleBypass(playerId, allow)
+end
+
 ---@param playerId number
 local function enable(playerId)
     local current = refs[playerId] or 0
     refs[playerId] = current + 1
     if current == 0 then
-        exports["WaveShield"]:toggleBypass(playerId, true)
+        toggleBypass(playerId, true)
     end
 end
 
@@ -23,7 +35,7 @@ local function disable(playerId)
     end
     if current == 1 then
         refs[playerId] = nil
-        exports["WaveShield"]:toggleBypass(playerId, false)
+        toggleBypass(playerId, false)
     else
         refs[playerId] = current - 1
     end
@@ -54,7 +66,7 @@ AddEventHandler('onResourceStop', function(resourceName)
         return
     end
     for playerId in pairs(refs) do
-        exports["WaveShield"]:toggleBypass(playerId, false)
+        toggleBypass(playerId, false)
     end
     refs = {}
 end)

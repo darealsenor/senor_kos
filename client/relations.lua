@@ -24,7 +24,7 @@ local function resetRelations()
     activeGroupHash = nil
 
     if hadKosRelations then
-        -- would only work for senor-squads (v1.1.3)
+        -- would only work for senor-squads (v1.1.3) and above
         TriggerEvent('squads:client:refreshRelations')
     end
 end

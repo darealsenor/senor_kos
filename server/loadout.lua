@@ -1,7 +1,17 @@
 local KOS_LOADOUT_META = 'kosLoadout'
 local confiscatedPlayers = {}
 
+-- Loadouts use ox_inventory features (Confiscate/Return/Clear inventory plus the
+-- swapItems hook) that the qb-inventory and default bridges cannot reproduce.
+-- If ox_inventory is not running we no-op the whole module so the rest of the
+-- script keeps working — matches just start without preset loadouts.
+local enabled = GetResourceState('ox_inventory'):find('start') ~= nil
+
 Loadout = Loadout or {}
+
+if not enabled then
+    lib.print.info('[loadout] ox_inventory not detected; loadouts are disabled')
+end
 
 local function mergeMetadata(loadoutId, itemMetadata)
     local metadata = {
@@ -64,10 +74,12 @@ local function getPreset(loadoutId)
 end
 
 function Loadout.hasPreset(loadoutId)
+    if not enabled then return false end
     return getPreset(loadoutId) ~= nil
 end
 
 function Loadout.giveLoadout(playerId, loadoutId)
+    if not enabled then return false end
     local preset = getPreset(loadoutId)
     if not preset then
         return false
@@ -94,12 +106,14 @@ function Loadout.giveLoadout(playerId, loadoutId)
 end
 
 function Loadout.removeLoadout(playerId)
+    if not enabled then return end
     Bridge.inventory.RemoveItemsWithMetadata(playerId, {
         [KOS_LOADOUT_META] = true,
     })
 end
 
 function Loadout.confiscateForMatch(playerId, loadoutId)
+    if not enabled then return end
     if not getPreset(loadoutId) or confiscatedPlayers[playerId] ~= nil then
         return
     end
@@ -109,7 +123,7 @@ function Loadout.confiscateForMatch(playerId, loadoutId)
 end
 
 function Loadout.prepareRound(playerId, loadoutId, callback)
-    if not getPreset(loadoutId) then
+    if not enabled or not getPreset(loadoutId) then
         if type(callback) == 'function' then
             callback(true)
         end
@@ -142,6 +156,7 @@ function Loadout.prepareRound(playerId, loadoutId, callback)
 end
 
 function Loadout.restoreInventory(playerId)
+    if not enabled then return end
     if confiscatedPlayers[playerId] == nil then
         Loadout.removeLoadout(playerId)
         return
@@ -158,6 +173,7 @@ function Loadout.restoreInventory(playerId)
 end
 
 function Loadout.handlePlayerLoaded(playerId)
+    if not enabled then return end
     local id = tonumber(playerId) or 0
     if id <= 0 then
         return
@@ -182,7 +198,7 @@ CreateThread(function()
 end)
 
 CreateThread(function()
-    if GetResourceState('ox_inventory') ~= 'started' then
+    if not enabled then
         return
     end
 
